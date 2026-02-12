@@ -10,8 +10,5 @@
 		"editor.defaultFormatter": "esbenp.prettier-vscode",
 		"editor.insertSpaces": false
 	},
-	"[scss]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode",
-		"editor.insertSpaces": false
-	}
+  "tailwindCSS.classFunctions": ["hlm", "cva", "classes"]
 }

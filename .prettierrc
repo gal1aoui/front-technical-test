@@ -21,5 +21,6 @@
 				"parser": "html"
 			}
 		}
-	]
+	],
+	"tailwindFunctions": ["hlm", "cva", "classes"]
 }

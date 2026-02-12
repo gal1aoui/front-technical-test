@@ -29,7 +29,7 @@
 								"input": "public"
 							}
 						],
-						"styles": ["src/styles.scss"],
+						"styles": ["src/styles.css"],
 						"scripts": []
 					},
 					"configurations": {
@@ -89,7 +89,7 @@
 								"input": "public"
 							}
 						],
-						"styles": ["src/styles.scss"],
+						"styles": ["src/styles.css"],
 						"scripts": []
 					}
 				},
@@ -103,6 +103,9 @@
 		}
 	},
 	"cli": {
-		"schematicCollections": ["angular-eslint"]
+    "schematicCollections": [
+      "angular-eslint"
+    ],
+    "analytics": false
 	}
 }
