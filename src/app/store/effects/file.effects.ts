@@ -1,11 +1,20 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Store } from '@ngrx/store';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { EMPTY, of } from 'rxjs';
-import { catchError, exhaustMap, map, switchMap, tap } from 'rxjs/operators';
+import {
+	catchError,
+	exhaustMap,
+	map,
+	switchMap,
+	tap,
+	withLatestFrom,
+} from 'rxjs/operators';
 import { toast } from 'ngx-sonner';
 import { FileManagerService } from '../../services/file-manager.service';
 import { FileActions } from '../actions/file.actions';
+import { selectCurrentParentId } from '../selectors/folder.selectors';
 
 function mapApiError(error: unknown): string {
 	const httpError = error as HttpErrorResponse;
@@ -17,6 +26,15 @@ function mapApiError(error: unknown): string {
 	if (code === 'DUPLICATE' || code === 'DUPLICATE_FOLDER') {
 		return httpError?.error?.desc ?? 'Duplicate name in this location';
 	}
+	if (code === 'DUPLICATE_NAME') {
+		return 'An item with this name already exists in this location';
+	}
+	if (code === 'FOLDER_NOT_EMPTY') {
+		return 'Cannot delete folder that contains items';
+	}
+	if (code === 'INVALID_PARENT') {
+		return 'Invalid parent folder';
+	}
 	return httpError?.error?.desc ?? 'Unexpected server error';
 }
 
@@ -24,17 +42,18 @@ function mapApiError(error: unknown): string {
 export class FileEffects {
 	private readonly actions$ = inject(Actions);
 	private readonly fileService = inject(FileManagerService);
+	private readonly store = inject(Store);
 
-	loadRootItems$ = createEffect(() =>
+	loadItems$ = createEffect(() =>
 		this.actions$.pipe(
-			ofType(FileActions.loadRootItems),
+			ofType(FileActions.loadItems),
 			switchMap(() =>
 				this.fileService.getItems().pipe(
 					map(response =>
-						FileActions.loadRootItemsSuccess({ items: response.items })
+						FileActions.loadItemsSuccess({ items: response.items })
 					),
 					catchError(error =>
-						of(FileActions.loadRootItemsFailure({ error: mapApiError(error) }))
+						of(FileActions.loadItemsFailure({ error: mapApiError(error) }))
 					)
 				)
 			)
@@ -44,8 +63,9 @@ export class FileEffects {
 	uploadFiles$ = createEffect(() =>
 		this.actions$.pipe(
 			ofType(FileActions.uploadFiles),
-			exhaustMap(({ files }) =>
-				this.fileService.uploadFiles(files).pipe(
+			withLatestFrom(this.store.select(selectCurrentParentId)),
+			exhaustMap(([{ files }, parentId]) =>
+				this.fileService.uploadFiles(files, parentId).pipe(
 					map(response =>
 						FileActions.uploadFilesSuccess({ count: response.items.length })
 					),
@@ -57,10 +77,31 @@ export class FileEffects {
 		)
 	);
 
-	reloadAfterUpload$ = createEffect(() =>
+	renameFile$ = createEffect(() =>
 		this.actions$.pipe(
-			ofType(FileActions.uploadFilesSuccess),
-			map(() => FileActions.loadRootItems())
+			ofType(FileActions.renameFile),
+			exhaustMap(({ itemId, name }) =>
+				this.fileService.renameItem(itemId, name).pipe(
+					map(() => FileActions.renameFileSuccess({ name })),
+					catchError(error =>
+						of(FileActions.renameFileFailure({ error: mapApiError(error) }))
+					)
+				)
+			)
+		)
+	);
+
+	moveFile$ = createEffect(() =>
+		this.actions$.pipe(
+			ofType(FileActions.moveFile),
+			exhaustMap(({ itemId, parentId }) =>
+				this.fileService.moveItem(itemId, parentId).pipe(
+					map(item => FileActions.moveFileSuccess({ name: item.name })),
+					catchError(error =>
+						of(FileActions.moveFileFailure({ error: mapApiError(error) }))
+					)
+				)
+			)
 		)
 	);
 
@@ -78,10 +119,21 @@ export class FileEffects {
 		)
 	);
 
-	reloadAfterDelete$ = createEffect(() =>
+	reloadAfterUpload$ = createEffect(() =>
 		this.actions$.pipe(
-			ofType(FileActions.deleteFileSuccess),
-			map(() => FileActions.loadRootItems())
+			ofType(FileActions.uploadFilesSuccess),
+			map(() => FileActions.loadItems())
+		)
+	);
+
+	reloadAfterMutations$ = createEffect(() =>
+		this.actions$.pipe(
+			ofType(
+				FileActions.renameFileSuccess,
+				FileActions.moveFileSuccess,
+				FileActions.deleteFileSuccess
+			),
+			map(() => FileActions.loadItems())
 		)
 	);
 
@@ -124,13 +176,49 @@ export class FileEffects {
 	loadFailureToast$ = createEffect(
 		() =>
 			this.actions$.pipe(
-				ofType(FileActions.loadRootItemsFailure),
+				ofType(FileActions.loadItemsFailure),
 				tap(({ error }) => toast.error(error))
 			),
 		{ dispatch: false }
 	);
 
-	deleteSuccessToast$ = createEffect(
+	renameFileSuccessToast$ = createEffect(
+		() =>
+			this.actions$.pipe(
+				ofType(FileActions.renameFileSuccess),
+				tap(({ name }) => toast.success(`Renamed to ${name}`))
+			),
+		{ dispatch: false }
+	);
+
+	renameFileFailureToast$ = createEffect(
+		() =>
+			this.actions$.pipe(
+				ofType(FileActions.renameFileFailure),
+				tap(({ error }) => toast.error(error))
+			),
+		{ dispatch: false }
+	);
+
+	moveFileSuccessToast$ = createEffect(
+		() =>
+			this.actions$.pipe(
+				ofType(FileActions.moveFileSuccess),
+				tap(({ name }) => toast.success(`Moved ${name}`))
+			),
+		{ dispatch: false }
+	);
+
+	moveFileFailureToast$ = createEffect(
+		() =>
+			this.actions$.pipe(
+				ofType(FileActions.moveFileFailure),
+				tap(({ error }) => toast.error(error))
+			),
+		{ dispatch: false }
+	);
+
+	deleteFileSuccessToast$ = createEffect(
 		() =>
 			this.actions$.pipe(
 				ofType(FileActions.deleteFileSuccess),
@@ -139,7 +227,7 @@ export class FileEffects {
 		{ dispatch: false }
 	);
 
-	deleteFailureToast$ = createEffect(
+	deleteFileFailureToast$ = createEffect(
 		() =>
 			this.actions$.pipe(
 				ofType(FileActions.deleteFileFailure),

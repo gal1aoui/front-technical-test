@@ -1,6 +1,5 @@
 import { defineConfig } from 'eslint-define-config';
-import angular from '@angular-eslint/eslint-plugin';
-import angularTemplate from '@angular-eslint/eslint-plugin-template';
+import angularEslint from 'angular-eslint';
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import prettierPlugin from 'eslint-plugin-prettier';
@@ -9,14 +8,22 @@ import prettier from 'eslint-config-prettier';
 export default defineConfig([
 	{ ignores: ['dist', 'coverage', 'node_modules', 'api'] },
 	js.configs.recommended,
-	...tseslint.configs.recommended,
+	...tseslint.configs.recommended.map(config => ({
+		...config,
+		files: ['**/*.ts'],
+	})),
+	...angularEslint.configs.tsRecommended.map(config => ({
+		...config,
+		files: ['**/*.ts'],
+	})),
+	...angularEslint.configs.templateRecommended.map(config => ({
+		...config,
+		files: ['**/*.html'],
+	})),
 	prettier,
 	{
 		files: ['**/*.ts'],
-		plugins: {
-			'@angular-eslint': angular,
-			prettier: prettierPlugin,
-		},
+		plugins: { prettier: prettierPlugin },
 		languageOptions: {
 			parser: tseslint.parser,
 			parserOptions: {
@@ -24,8 +31,8 @@ export default defineConfig([
 				tsconfigRootDir: import.meta.dirname,
 			},
 		},
+		processor: angularEslint.processInlineTemplates,
 		rules: {
-			...angular.configs.recommended.rules,
 			...tseslint.configs.stylistic.rules,
 			'prettier/prettier': ['error', { useTabs: true }],
 			'@angular-eslint/directive-selector': [
@@ -40,12 +47,8 @@ export default defineConfig([
 	},
 	{
 		files: ['**/*.html'],
-		plugins: {
-			'@angular-eslint/template': angularTemplate,
-			prettier: prettierPlugin,
-		},
+		plugins: { prettier: prettierPlugin },
 		rules: {
-			...angularTemplate.configs.recommended.rules,
 			'prettier/prettier': 'error',
 		},
 	},

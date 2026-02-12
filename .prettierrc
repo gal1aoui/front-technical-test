@@ -8,6 +8,7 @@
 	"bracketSameLine": true,
 	"bracketSpacing": true,
 	"arrowParens": "avoid",
+	"plugins": ["prettier-plugin-tailwindcss"],
 	"overrides": [
 		{
 			"files": "*.component.html",

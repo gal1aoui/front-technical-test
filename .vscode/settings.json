@@ -10,5 +10,11 @@
 		"editor.defaultFormatter": "esbenp.prettier-vscode",
 		"editor.insertSpaces": false
 	},
-  "tailwindCSS.classFunctions": ["hlm", "cva", "classes"]
+	"[angular]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[angular-html]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"tailwindCSS.classFunctions": ["hlm", "cva", "classes"]
 }

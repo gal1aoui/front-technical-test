@@ -70,4 +70,39 @@ describe('FileManagerService', () => {
 		expect(req.request.responseType).toBe('blob');
 		req.flush(new Blob(['x']));
 	});
+
+	it('loads child items for a folder', () => {
+		service.getItems('folder-1').subscribe();
+		const req = httpMock.expectOne('/api/items?parentId=folder-1');
+		expect(req.request.method).toBe('GET');
+		req.flush({ items: [] });
+	});
+
+	it('creates folder with parent id', () => {
+		service.createFolder('Docs', 'folder-1').subscribe();
+		const req = httpMock.expectOne('/api/items');
+		expect(req.request.method).toBe('POST');
+		expect(req.request.body).toEqual({
+			name: 'Docs',
+			folder: true,
+			parentId: 'folder-1',
+		});
+		req.flush({ item: {} });
+	});
+
+	it('renames an item', () => {
+		service.renameItem('42', 'new-name.txt').subscribe();
+		const req = httpMock.expectOne('/api/items/42');
+		expect(req.request.method).toBe('PATCH');
+		expect(req.request.body).toEqual({ name: 'new-name.txt' });
+		req.flush({});
+	});
+
+	it('moves an item', () => {
+		service.moveItem('42', 'folder-2').subscribe();
+		const req = httpMock.expectOne('/api/items/42');
+		expect(req.request.method).toBe('PATCH');
+		expect(req.request.body).toEqual({ parentId: 'folder-2' });
+		req.flush({});
+	});
 });

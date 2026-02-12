@@ -4,10 +4,11 @@ import { FILE_FEATURE_KEY, FileState } from '../states/file.state';
 export const selectFileState =
 	createFeatureSelector<FileState>(FILE_FEATURE_KEY);
 
-export const selectRootItems = createSelector(
+export const selectAllItems = createSelector(
 	selectFileState,
 	state => state.items
 );
+
 export const selectFileLoading = createSelector(
 	selectFileState,
 	state => state.loading

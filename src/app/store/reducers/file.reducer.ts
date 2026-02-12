@@ -4,18 +4,18 @@ import { initialFileState } from '../states/file.state';
 
 export const fileReducer = createReducer(
 	initialFileState,
-	on(FileActions.loadRootItems, state => ({
+	on(FileActions.loadItems, state => ({
 		...state,
 		loading: true,
 		error: null,
 	})),
-	on(FileActions.loadRootItemsSuccess, (state, { items }) => ({
+	on(FileActions.loadItemsSuccess, (state, { items }) => ({
 		...state,
 		items,
 		loading: false,
 		error: null,
 	})),
-	on(FileActions.loadRootItemsFailure, (state, { error }) => ({
+	on(FileActions.loadItemsFailure, (state, { error }) => ({
 		...state,
 		loading: false,
 		error,
@@ -33,6 +33,14 @@ export const fileReducer = createReducer(
 	on(FileActions.uploadFilesFailure, (state, { error }) => ({
 		...state,
 		uploading: false,
+		error,
+	})),
+	on(FileActions.renameFileFailure, (state, { error }) => ({
+		...state,
+		error,
+	})),
+	on(FileActions.moveFileFailure, (state, { error }) => ({
+		...state,
 		error,
 	})),
 	on(FileActions.deleteFileFailure, (state, { error }) => ({

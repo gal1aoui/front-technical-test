@@ -3,13 +3,13 @@ import { initialFileState } from '../states/file.state';
 import { FileActions } from '../actions/file.actions';
 
 describe('fileReducer', () => {
-	it('sets loading=true on loadRootItems', () => {
-		const state = fileReducer(initialFileState, FileActions.loadRootItems());
+	it('sets loading=true on loadItems', () => {
+		const state = fileReducer(initialFileState, FileActions.loadItems());
 		expect(state.loading).toBeTrue();
 		expect(state.error).toBeNull();
 	});
 
-	it('stores items on loadRootItemsSuccess', () => {
+	it('stores items on loadItemsSuccess', () => {
 		const items = [
 			{
 				id: '1',
@@ -24,7 +24,7 @@ describe('fileReducer', () => {
 
 		const state = fileReducer(
 			{ ...initialFileState, loading: true },
-			FileActions.loadRootItemsSuccess({ items })
+			FileActions.loadItemsSuccess({ items })
 		);
 
 		expect(state.loading).toBeFalse();

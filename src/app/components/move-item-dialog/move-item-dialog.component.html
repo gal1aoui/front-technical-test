@@ -1,0 +1,48 @@
+<hlm-dialog [state]="state" (stateChanged)="onStateChanged($event)">
+	<hlm-dialog-content *hlmDialogPortal="let ctx" [showCloseButton]="false">
+		<hlm-dialog-header>
+			<h3 hlmDialogTitle>Move item</h3>
+			<p hlmDialogDescription>Select the destination folder.</p>
+		</hlm-dialog-header>
+
+		@if (target && details) {
+		<div class="rounded border bg-gray-50 p-3 text-sm text-gray-700">
+			<div>
+				<span class="font-medium">Filename:</span> {{ details.fileName }}
+			</div>
+			<div>
+				<span class="font-medium">File extension:</span>
+				{{ details.fileExtension }}
+			</div>
+			<div>
+				<span class="font-medium">Creation date:</span> {{ details.creationDate
+				}}
+			</div>
+			<div><span class="font-medium">Path:</span> {{ details.path }}</div>
+			<div><span class="font-medium">Size:</span> {{ details.size }}</div>
+		</div>
+		}
+
+		<div class="grid gap-2">
+			<span class="text-sm font-medium">Destination</span>
+			<div class="max-h-64 overflow-auto rounded-md border bg-white p-1">
+				@for (option of options; track option.id ?? 'root') {
+				<button
+					type="button"
+					class="w-full rounded px-2 py-1 text-left text-sm hover:bg-gray-100"
+					[class.bg-gray-100]="(selectedParentId ?? null) === option.id"
+					(click)="selectDestination(option.id)">
+					{{ option.label }}
+				</button>
+				}
+			</div>
+		</div>
+
+		<div hlmDialogFooter>
+			<button hlmBtn variant="outline" type="button" (click)="onCancel()">
+				Cancel
+			</button>
+			<button hlmBtn type="button" (click)="onSubmit()">Move</button>
+		</div>
+	</hlm-dialog-content>
+</hlm-dialog>

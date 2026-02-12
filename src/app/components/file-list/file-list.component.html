@@ -8,16 +8,27 @@
 
 	<div class="flex items-center justify-between">
 		<h2 class="text-xl font-semibold">Files</h2>
-		<button
-			hlmBtn
-			variant="outline"
-			size="sm"
-			class="gap-2"
-			(click)="refresh()"
-			[disabled]="loading$ | async">
-			<ng-icon hlm size="sm" name="lucideRefreshCcw" />
-			{{ (loading$ | async) ? 'Refreshing...' : 'Refresh' }}
-		</button>
+		<div class="flex items-center gap-2">
+			<button
+				hlmBtn
+				variant="outline"
+				size="sm"
+				class="gap-2"
+				(click)="createFolder()">
+				<ng-icon hlm size="sm" name="lucideFolderPlus" />
+				New folder
+			</button>
+			<button
+				hlmBtn
+				variant="outline"
+				size="sm"
+				class="gap-2"
+				(click)="refresh()"
+				[disabled]="loading$ | async">
+				<ng-icon hlm size="sm" name="lucideRefreshCcw" />
+				{{ (loading$ | async) ? 'Refreshing...' : 'Refresh' }}
+			</button>
+		</div>
 	</div>
 
 	@if (loading$ | async) {
@@ -25,6 +36,45 @@
 	} @if (error$ | async; as error) {
 	<div class="rounded bg-red-50 p-3 text-red-600">{{ error }}</div>
 	}
+
+	<div
+		class="flex items-center justify-between rounded border bg-gray-50 px-3 py-2 text-sm">
+		<div class="flex min-w-0 items-center gap-1 overflow-x-auto">
+			<button
+				hlmBtn
+				variant="ghost"
+				size="sm"
+				class="h-7 gap-1 px-2"
+				(click)="goToRoot()">
+				<ng-icon hlm size="sm" name="lucideHouse" />
+				Root
+			</button>
+			@if (breadcrumbs$ | async; as breadcrumbs) { @for (crumb of breadcrumbs;
+			track crumb.id) {
+			<ng-icon hlm size="sm" name="lucideChevronRight" />
+			<button
+				hlmBtn
+				variant="ghost"
+				size="sm"
+				class="h-7 px-2"
+				(click)="goToFolder(crumb.id)">
+				{{ crumb.name }}
+			</button>
+			} }
+		</div>
+
+		@let currentFolder = (currentFolder$ | async);
+		<button
+			hlmBtn
+			variant="outline"
+			size="sm"
+			class="gap-2"
+			[disabled]="!currentFolder"
+			(click)="currentFolder && goUp(currentFolder)">
+			<ng-icon hlm size="sm" name="lucideArrowUp" />
+			Up
+		</button>
+	</div>
 
 	<div
 		class="overflow-hidden rounded border bg-white"
@@ -38,13 +88,13 @@
 			<div class="text-right">Actions</div>
 		</div>
 
-		@if (items$ | async; as items) { @if (items.length === 0) {
+		@let items = (items$ | async) ?? []; @if (items.length === 0) {
 		<div class="px-4 py-8 text-center text-gray-500">No files or folders</div>
-		} @if (items.length > 0) {
+		} @else {
 		<cdk-virtual-scroll-viewport [itemSize]="56" class="h-96 w-full">
 			<div
 				*cdkVirtualFor="let item of items; trackBy: trackById"
-				class="grid items-center gap-2 border-b px-4 py-3 text-sm hover:bg-gray-50"
+				class="group grid items-center gap-2 border-b px-4 py-3 text-sm hover:bg-gray-50"
 				[style.gridTemplateColumns]="columnTemplate"
 				[hlmContextMenuTrigger]="itemMenu"
 				[hlmContextMenuTriggerData]="{ item: item }"
@@ -55,7 +105,16 @@
 						size="sm"
 						class="shrink-0 text-gray-500"
 						[name]="item.folder ? 'lucideFolder' : 'lucideFile'" />
+					@if (item.folder) {
+					<button
+						type="button"
+						class="truncate text-left text-blue-700 cursor-pointer hover:underline"
+						(click)="openFolder(item)">
+						{{ item.name }}
+					</button>
+					} @else {
 					<span class="truncate">{{ item.name }}</span>
+					}
 				</div>
 				<div class="text-center text-gray-600">
 					{{ item.folder ? 'Folder' : 'File' }}
@@ -64,20 +123,47 @@
 					{{ item.folder ? '-' : formatSize(item.size || 0) }}
 				</div>
 				<div class="text-right">
-					@if (!item.folder) {
-					<button
-						hlmBtn
-						variant="outline"
-						size="icon"
-						aria-label="Download file"
-						(click)="download(item)">
-						<ng-icon hlm size="sm" name="lucideDownload" />
-					</button>
-					}
+					<div
+						class="inline-flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+						@if (!item.folder) {
+						<button
+							hlmBtn
+							variant="outline"
+							size="icon"
+							aria-label="Download file"
+							(click)="download(item)">
+							<ng-icon hlm size="sm" name="lucideDownload" />
+						</button>
+						}
+						<button
+							hlmBtn
+							variant="outline"
+							size="icon"
+							aria-label="Rename item"
+							(click)="rename(item)">
+							<ng-icon hlm size="sm" name="lucidePencil" />
+						</button>
+						<button
+							hlmBtn
+							variant="outline"
+							size="icon"
+							aria-label="Move item"
+							(click)="move(item)">
+							<ng-icon hlm size="sm" name="lucideArrowRightLeft" />
+						</button>
+						<button
+							hlmBtn
+							variant="outline"
+							size="icon"
+							aria-label="Delete item"
+							(click)="delete(item)">
+							<ng-icon hlm size="sm" name="lucideTrash2" />
+						</button>
+					</div>
 				</div>
 			</div>
 		</cdk-virtual-scroll-viewport>
-		} }
+		}
 	</div>
 
 	<ng-template #listAreaMenu>
@@ -90,12 +176,22 @@
 				<ng-icon hlm size="sm" name="lucideUpload" />
 				Upload files
 			</button>
+			<button hlmDropdownMenuItem type="button" (click)="createFolder()">
+				<ng-icon hlm size="sm" name="lucideFolderPlus" />
+				Create folder
+			</button>
 		</div>
 	</ng-template>
 
 	<ng-template #itemMenu let-item="item">
 		<div hlmDropdownMenu>
-			<div hlmDropdownMenuLabel>File actions</div>
+			<div hlmDropdownMenuLabel>Item actions</div>
+			@if (item.folder) {
+			<button hlmDropdownMenuItem type="button" (click)="openFolder(item)">
+				<ng-icon hlm size="sm" name="lucideFolder" />
+				Open folder
+			</button>
+			}
 			<button
 				hlmDropdownMenuItem
 				type="button"
@@ -104,15 +200,44 @@
 				<ng-icon hlm size="sm" name="lucideDownload" />
 				Download
 			</button>
+			<button hlmDropdownMenuItem type="button" (click)="rename(item)">
+				<ng-icon hlm size="sm" name="lucidePencil" />
+				Rename
+			</button>
+			<button hlmDropdownMenuItem type="button" (click)="move(item)">
+				<ng-icon hlm size="sm" name="lucideArrowRightLeft" />
+				Move
+			</button>
 			<button
 				hlmDropdownMenuItem
 				type="button"
 				variant="destructive"
-				[disabled]="item.folder"
 				(click)="delete(item)">
 				<ng-icon hlm size="sm" name="lucideTrash2" />
 				Delete
 			</button>
 		</div>
 	</ng-template>
+
+	<ic-item-dialog
+		[state]="dialogState"
+		[mode]="dialogMode"
+		[target]="dialogTarget"
+		[details]="getItemDetails(dialogTarget)"
+		[name]="dialogName"
+		(stateChange)="onDialogStateChanged($event)"
+		(nameChange)="dialogName = $event"
+		(submitted)="submitItemDialog()"
+		(cancelled)="closeItemDialog()" />
+
+	<ic-move-item-dialog
+		[state]="moveDialogState"
+		[target]="moveDialogTarget"
+		[details]="getItemDetails(moveDialogTarget)"
+		[selectedParentId]="moveDialogParentId"
+		[options]="moveDialogOptions"
+		(stateChange)="onMoveDialogStateChanged($event)"
+		(selectedParentIdChange)="moveDialogParentId = $event"
+		(submitted)="submitMoveDialog()"
+		(cancelled)="closeMoveDialog()" />
 </div>

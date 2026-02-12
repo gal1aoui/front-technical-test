@@ -16,6 +16,17 @@ export class FileManagerService {
 		});
 	}
 
+	createFolder(
+		name: string,
+		parentId: string | null
+	): Observable<{ item: FileItem }> {
+		return this.http.post<{ item: FileItem }>(`${this.base}/items`, {
+			name,
+			folder: true,
+			parentId,
+		});
+	}
+
 	uploadFiles(
 		files: File[],
 		parentId?: string | null
@@ -29,6 +40,16 @@ export class FileManagerService {
 	download(itemId: string): Observable<Blob> {
 		return this.http.get(`${this.base}/items/${itemId}`, {
 			responseType: 'blob',
+		});
+	}
+
+	renameItem(itemId: string, name: string): Observable<FileItem> {
+		return this.http.patch<FileItem>(`${this.base}/items/${itemId}`, { name });
+	}
+
+	moveItem(itemId: string, parentId: string | null): Observable<FileItem> {
+		return this.http.patch<FileItem>(`${this.base}/items/${itemId}`, {
+			parentId,
 		});
 	}
 
