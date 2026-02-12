@@ -6,9 +6,9 @@ import { provideEffects } from '@ngrx/effects';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 
 import { routes } from './app.routes';
-import { FILE_FEATURE_KEY } from './store/file.state';
-import { fileReducer } from './store/file.reducer';
-import { FileEffects } from './store/file.effects';
+import { FILE_FEATURE_KEY } from './store/states/file.state';
+import { fileReducer } from './store/reducers/file.reducer';
+import { FileEffects } from './store/effects/file.effects';
 
 export const appConfig: ApplicationConfig = {
 	providers: [

@@ -22,12 +22,12 @@ import { HlmContextMenuImports } from '@spartan-ng/helm/context-menu';
 import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { toast } from 'ngx-sonner';
-import { FileActions } from '../../store/file.actions';
+import { FileActions } from '../../store/actions/file.actions';
 import {
 	selectFileError,
 	selectFileLoading,
 	selectRootItems,
-} from '../../store/file.selectors';
+} from '../../store/selectors/file.selectors';
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
 

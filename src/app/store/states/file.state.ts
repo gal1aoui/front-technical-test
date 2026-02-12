@@ -1,4 +1,4 @@
-import { FileItem } from '../models/file-item.model';
+import { FileItem } from '../../models/file-item.model';
 
 export const FILE_FEATURE_KEY = 'file';
 

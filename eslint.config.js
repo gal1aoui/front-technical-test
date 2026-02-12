@@ -7,7 +7,7 @@ import prettierPlugin from 'eslint-plugin-prettier';
 import prettier from 'eslint-config-prettier';
 
 export default defineConfig([
-	{ ignores: ['dist', 'coverage', 'node_modules'] },
+	{ ignores: ['dist', 'coverage', 'node_modules', 'api'] },
 	js.configs.recommended,
 	...tseslint.configs.recommended,
 	prettier,

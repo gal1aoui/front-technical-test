@@ -1,7 +1,8 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
-import { FILE_FEATURE_KEY, FileState } from './file.state';
+import { FILE_FEATURE_KEY, FileState } from '../states/file.state';
 
-export const selectFileState = createFeatureSelector<FileState>(FILE_FEATURE_KEY);
+export const selectFileState =
+	createFeatureSelector<FileState>(FILE_FEATURE_KEY);
 
 export const selectRootItems = createSelector(
 	selectFileState,

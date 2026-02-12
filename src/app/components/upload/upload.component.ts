@@ -4,8 +4,8 @@ import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { HlmButtonImports } from '@spartan-ng/helm/button';
 import { toast } from 'ngx-sonner';
-import { FileActions } from '../../store/file.actions';
-import { selectFileUploading } from '../../store/file.selectors';
+import { FileActions } from '../../store/actions/file.actions';
+import { selectFileUploading } from '../../store/selectors/file.selectors';
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 

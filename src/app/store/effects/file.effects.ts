@@ -4,8 +4,8 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { EMPTY, of } from 'rxjs';
 import { catchError, exhaustMap, map, switchMap, tap } from 'rxjs/operators';
 import { toast } from 'ngx-sonner';
-import { FileManagerService } from '../services/file-manager.service';
-import { FileActions } from './file.actions';
+import { FileManagerService } from '../../services/file-manager.service';
+import { FileActions } from '../actions/file.actions';
 
 function mapApiError(error: unknown): string {
 	const httpError = error as HttpErrorResponse;

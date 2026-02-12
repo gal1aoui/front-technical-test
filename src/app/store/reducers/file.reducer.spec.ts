@@ -1,6 +1,6 @@
 import { fileReducer } from './file.reducer';
-import { initialFileState } from './file.state';
-import { FileActions } from './file.actions';
+import { initialFileState } from '../states/file.state';
+import { FileActions } from '../actions/file.actions';
 
 describe('fileReducer', () => {
 	it('sets loading=true on loadRootItems', () => {
@@ -33,7 +33,10 @@ describe('fileReducer', () => {
 
 	it('sets uploading=true on uploadFiles', () => {
 		const file = new File(['x'], 'x.txt', { type: 'text/plain' });
-		const state = fileReducer(initialFileState, FileActions.uploadFiles({ files: [file] }));
+		const state = fileReducer(
+			initialFileState,
+			FileActions.uploadFiles({ files: [file] })
+		);
 
 		expect(state.uploading).toBeTrue();
 		expect(state.error).toBeNull();
