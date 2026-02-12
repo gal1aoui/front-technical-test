@@ -13,11 +13,16 @@
     "postinstall": "cd api && npm ci",
     "format:check": "prettier --check \"src/**/*.{ts,html,scss,json}\"",
     "format:write": "prettier --write \"src/**/*.{ts,html,scss,json}\"",
-    "start:all": "concurrently \"cd api && npm start\" \"ng dev\""
+    "start:all": "concurrently \"cd api && npm start\" \"ng serve --proxy-config proxy.conf.json\""
   },
   "private": true,
   "dependencies": {
     "@angular/cdk": "^20.2.14",
+    "@ng-icons/core": ">=32.0.0 <34.0.0",
+    "@ng-icons/lucide": ">=32.0.0 <34.0.0",
+    "@ngrx/effects": "^20.1.0",
+    "@ngrx/store": "^20.1.0",
+    "@ngrx/store-devtools": "^20.1.0",
     "@spartan-ng/brain": "^0.0.1-alpha.632",
     "@tailwindcss/postcss": "^4.1.18",
     "class-variance-authority": "^0.7.0",
@@ -51,6 +56,7 @@
     "concurrently": "^9.2.1",
     "eslint": "^9.33.0",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-define-config": "^2.1.0",
     "eslint-plugin-prettier": "^5.5.4",
     "jasmine-core": "~5.6.0",
     "karma": "~6.4.0",

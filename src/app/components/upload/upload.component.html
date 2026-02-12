@@ -1,0 +1,22 @@
+<div class="flex flex-col gap-4">
+	<h2 class="text-xl font-semibold">Upload Files</h2>
+	<div class="flex gap-3">
+		<input
+			#fileInput
+			type="file"
+			multiple
+			(change)="onFilesChange($event)"
+			class="flex-1 border border-gray-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+		<button
+			hlmBtn
+			(click)="upload(fileInput)"
+			[disabled]="selectedFiles.length === 0 || (uploading$ | async)">
+			{{ (uploading$ | async) ? 'Uploading...' : 'Upload' }}
+		</button>
+	</div>
+	@if (selectedFiles.length > 0) {
+	<p class="text-sm text-gray-600">
+		{{ selectedFiles.length }} file(s) selected (max 10MB each)
+	</p>
+	}
+</div>

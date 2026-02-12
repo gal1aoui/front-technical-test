@@ -1,2 +1,19 @@
 <hlm-toaster />
-<button hlmBtn (click)="showToast()">Show Toast</button>
+<div class="min-h-screen bg-gray-50 p-8">
+	<div class="mx-auto max-w-6xl space-y-6">
+		<div class="space-y-2">
+			<h1 class="text-4xl font-bold text-gray-900">File Manager</h1>
+			<p class="text-gray-600">Upload, download, and manage your files</p>
+		</div>
+
+		<div class="space-y-8">
+			<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+				<ic-upload></ic-upload>
+			</div>
+
+			<div class="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+				<ic-file-list></ic-file-list>
+			</div>
+		</div>
+	</div>
+</div>

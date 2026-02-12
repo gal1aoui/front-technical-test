@@ -24,6 +24,27 @@
       ],
       "@spartan-ng/helm/button": [
         "./libs/ui/button/src/index.ts"
+      ],
+      "@spartan-ng/helm/scroll-area": [
+        "./libs/ui/scroll-area/src/index.ts"
+      ],
+      "@spartan-ng/helm/resizable": [
+        "./libs/ui/resizable/src/index.ts"
+      ],
+      "@spartan-ng/helm/breadcrumb": [
+        "./libs/ui/breadcrumb/src/index.ts"
+      ],
+      "@spartan-ng/helm/icon": [
+        "./libs/ui/icon/src/index.ts"
+      ],
+      "@spartan-ng/helm/button-group": [
+        "./libs/ui/button-group/src/index.ts"
+      ],
+      "@spartan-ng/helm/context-menu": [
+        "./libs/ui/context-menu/src/index.ts"
+      ],
+      "@spartan-ng/helm/dropdown-menu": [
+        "./libs/ui/dropdown-menu/src/index.ts"
       ]
     }
   },

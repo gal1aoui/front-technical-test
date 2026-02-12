@@ -1,10 +1,14 @@
 import { TestBed } from '@angular/core/testing';
+import { provideStore } from '@ngrx/store';
 import { AppComponent } from './app.component';
+import { FILE_FEATURE_KEY } from './store/file.state';
+import { fileReducer } from './store/file.reducer';
 
 describe('AppComponent', () => {
 	beforeEach(async () => {
 		await TestBed.configureTestingModule({
 			imports: [AppComponent],
+			providers: [provideStore({ [FILE_FEATURE_KEY]: fileReducer })],
 		}).compileComponents();
 	});
 
@@ -18,8 +22,6 @@ describe('AppComponent', () => {
 		const fixture = TestBed.createComponent(AppComponent);
 		fixture.detectChanges();
 		const compiled = fixture.nativeElement as HTMLElement;
-		expect(compiled.querySelector('h1')?.textContent).toContain(
-			'Hello, angular-technical-test'
-		);
+		expect(compiled.querySelector('h1')?.textContent).toContain('File Manager');
 	});
 });

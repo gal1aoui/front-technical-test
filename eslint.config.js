@@ -28,7 +28,6 @@ export default defineConfig([
 			...angular.configs.recommended.rules,
 			...tseslint.configs.stylistic.rules,
 			'prettier/prettier': ['error', { useTabs: true }],
-			'@typescript-eslint/indent': ['error', 'tab'],
 			'@angular-eslint/directive-selector': [
 				'error',
 				{ type: 'attribute', prefix: 'ic', style: 'camelCase' },
@@ -43,11 +42,11 @@ export default defineConfig([
 		files: ['**/*.html'],
 		plugins: {
 			'@angular-eslint/template': angularTemplate,
+			prettier: prettierPlugin,
 		},
 		rules: {
 			...angularTemplate.configs.recommended.rules,
 			'prettier/prettier': 'error',
 		},
-		processor: '@angular-eslint/template/process-inline-templates',
 	},
 ]);
