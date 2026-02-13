@@ -5,10 +5,27 @@
 		multiple
 		class="hidden"
 		(change)="onFilesPicked($event, listUploadInput)" />
+	<input
+		#folderUploadInput
+		type="file"
+		multiple
+		webkitdirectory
+		directory
+		class="hidden"
+		(change)="onFoldersPicked($event, folderUploadInput)" />
 
-	<div class="flex items-center justify-between">
+	<div class="flex flex-wrap items-center justify-between gap-3">
 		<h2 class="text-xl font-semibold">Files</h2>
-		<div class="flex items-center gap-2">
+		<div class="flex flex-wrap items-center gap-2">
+			<button
+				hlmBtn
+				variant="outline"
+				size="sm"
+				class="gap-2"
+				(click)="openUploadPicker(folderUploadInput)">
+				<ng-icon hlm size="sm" name="lucideUpload" />
+				Upload folder
+			</button>
 			<button
 				hlmBtn
 				variant="outline"
@@ -77,93 +94,105 @@
 	</div>
 
 	<div
-		class="overflow-hidden rounded border bg-white"
+		class="overflow-hidden rounded border bg-white transition-colors"
+		[class.border-blue-500]="isDragActive"
+		[class.bg-blue-50]="isDragActive"
+		(dragover)="onDragOver($event)"
+		(dragleave)="onDragLeave($event)"
+		(drop)="onDrop($event)"
 		[hlmContextMenuTrigger]="listAreaMenu">
-		<div
-			class="grid gap-2 border-b bg-gray-50 px-4 py-3 text-sm font-medium"
-			[style.gridTemplateColumns]="columnTemplate">
-			<div>Name</div>
-			<div class="text-center">Type</div>
-			<div class="text-center">Size</div>
-			<div class="text-right">Actions</div>
+		<div class="overflow-x-auto">
+			<table class="w-full min-w-175 table-fixed text-sm">
+				<thead class="border-b bg-gray-50 text-sm font-medium">
+					<tr>
+						<th class="px-4 py-3 text-left">Name</th>
+						<th class="w-28 px-2 py-3 text-center">Type</th>
+						<th class="w-32 px-2 py-3 text-center">Size</th>
+						<th class="w-52 px-4 py-3 text-right">Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					@let items = (items$ | async) ?? []; @if (items.length === 0) {
+					<tr>
+						<td colspan="4" class="px-4 py-8 text-center text-gray-500">
+							Drop files/folders here or use upload actions
+						</td>
+					</tr>
+					} @else { @for (item of items; track item.id) {
+					<tr
+						class="group border-b hover:bg-gray-50"
+						[hlmContextMenuTrigger]="itemMenu"
+						[hlmContextMenuTriggerData]="{ item: item }"
+						(contextmenu)="onRowContextMenu($event)">
+						<td class="px-4 py-3">
+							<div class="flex items-center gap-2 truncate">
+								<ng-icon
+									hlm
+									size="sm"
+									class="shrink-0 text-gray-500"
+									[name]="item.folder ? 'lucideFolder' : 'lucideFile'" />
+								@if (item.folder) {
+								<button
+									type="button"
+									class="cursor-pointer truncate text-left text-blue-700 hover:underline"
+									(click)="openFolder(item)">
+									{{ item.name }}
+								</button>
+								} @else {
+								<span class="truncate">{{ item.name }}</span>
+								}
+							</div>
+						</td>
+						<td class="px-2 py-3 text-center text-gray-600">
+							{{ item.folder ? 'Folder' : 'File' }}
+						</td>
+						<td class="px-2 py-3 text-center text-gray-600">
+							{{ item.folder ? '-' : formatSize(item.size || 0) }}
+						</td>
+						<td class="px-4 py-3 text-right">
+							<div
+								class="inline-flex items-center gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+								@if (!item.folder) {
+								<button
+									hlmBtn
+									variant="outline"
+									size="icon"
+									aria-label="Download file"
+									(click)="download(item)">
+									<ng-icon hlm size="sm" name="lucideDownload" />
+								</button>
+								}
+								<button
+									hlmBtn
+									variant="outline"
+									size="icon"
+									aria-label="Rename item"
+									(click)="rename(item)">
+									<ng-icon hlm size="sm" name="lucidePencil" />
+								</button>
+								<button
+									hlmBtn
+									variant="outline"
+									size="icon"
+									aria-label="Move item"
+									(click)="move(item)">
+									<ng-icon hlm size="sm" name="lucideArrowRightLeft" />
+								</button>
+								<button
+									hlmBtn
+									variant="outline"
+									size="icon"
+									aria-label="Delete item"
+									(click)="delete(item)">
+									<ng-icon hlm size="sm" name="lucideTrash2" />
+								</button>
+							</div>
+						</td>
+					</tr>
+					} }
+				</tbody>
+			</table>
 		</div>
-
-		@let items = (items$ | async) ?? []; @if (items.length === 0) {
-		<div class="px-4 py-8 text-center text-gray-500">No files or folders</div>
-		} @else {
-		<cdk-virtual-scroll-viewport [itemSize]="56" class="h-96 w-full">
-			<div
-				*cdkVirtualFor="let item of items; trackBy: trackById"
-				class="group grid items-center gap-2 border-b px-4 py-3 text-sm hover:bg-gray-50"
-				[style.gridTemplateColumns]="columnTemplate"
-				[hlmContextMenuTrigger]="itemMenu"
-				[hlmContextMenuTriggerData]="{ item: item }"
-				(contextmenu)="onRowContextMenu($event)">
-				<div class="flex items-center gap-2 truncate">
-					<ng-icon
-						hlm
-						size="sm"
-						class="shrink-0 text-gray-500"
-						[name]="item.folder ? 'lucideFolder' : 'lucideFile'" />
-					@if (item.folder) {
-					<button
-						type="button"
-						class="truncate text-left text-blue-700 cursor-pointer hover:underline"
-						(click)="openFolder(item)">
-						{{ item.name }}
-					</button>
-					} @else {
-					<span class="truncate">{{ item.name }}</span>
-					}
-				</div>
-				<div class="text-center text-gray-600">
-					{{ item.folder ? 'Folder' : 'File' }}
-				</div>
-				<div class="text-center text-gray-600">
-					{{ item.folder ? '-' : formatSize(item.size || 0) }}
-				</div>
-				<div class="text-right">
-					<div
-						class="inline-flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
-						@if (!item.folder) {
-						<button
-							hlmBtn
-							variant="outline"
-							size="icon"
-							aria-label="Download file"
-							(click)="download(item)">
-							<ng-icon hlm size="sm" name="lucideDownload" />
-						</button>
-						}
-						<button
-							hlmBtn
-							variant="outline"
-							size="icon"
-							aria-label="Rename item"
-							(click)="rename(item)">
-							<ng-icon hlm size="sm" name="lucidePencil" />
-						</button>
-						<button
-							hlmBtn
-							variant="outline"
-							size="icon"
-							aria-label="Move item"
-							(click)="move(item)">
-							<ng-icon hlm size="sm" name="lucideArrowRightLeft" />
-						</button>
-						<button
-							hlmBtn
-							variant="outline"
-							size="icon"
-							aria-label="Delete item"
-							(click)="delete(item)">
-							<ng-icon hlm size="sm" name="lucideTrash2" />
-						</button>
-					</div>
-				</div>
-			</div>
-		</cdk-virtual-scroll-viewport>
-		}
 	</div>
 
 	<ng-template #listAreaMenu>
@@ -175,6 +204,13 @@
 				(click)="openUploadPicker(listUploadInput)">
 				<ng-icon hlm size="sm" name="lucideUpload" />
 				Upload files
+			</button>
+			<button
+				hlmDropdownMenuItem
+				type="button"
+				(click)="openUploadPicker(folderUploadInput)">
+				<ng-icon hlm size="sm" name="lucideUpload" />
+				Upload folder
 			</button>
 			<button hlmDropdownMenuItem type="button" (click)="createFolder()">
 				<ng-icon hlm size="sm" name="lucideFolderPlus" />

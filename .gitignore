@@ -42,4 +42,6 @@ testem.log
 .DS_Store
 Thumbs.db
 
-paclkage-lock.json
+package-lock.json
+/libs
+api/db.js

@@ -1,13 +1,11 @@
 @layer theme, base, components, utilities;
 @import 'tailwindcss/theme.css' layer(theme);
 @import 'tailwindcss/preflight.css' layer(base);
+@import '@spartan-ng/brain/hlm-tailwind-preset.css';
 @import 'tailwindcss/utilities.css';
 
-
-
-
-
-@import "@spartan-ng/brain/hlm-tailwind-preset.css";
+@source './**/*.{html,ts}';
+@source '../libs/**/*.{html,ts}';
 
 :root {
 color-scheme: light;

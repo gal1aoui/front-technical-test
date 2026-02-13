@@ -15,6 +15,5 @@
 	},
 	"[angular-html]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
-	},
-	"tailwindCSS.classFunctions": ["hlm", "cva", "classes"]
+	}
 }
