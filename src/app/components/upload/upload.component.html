@@ -1,22 +1,153 @@
 <div class="flex flex-col gap-4">
-	<h2 class="text-xl font-semibold">Upload Files</h2>
-	<div class="flex gap-3">
-		<input
-			#fileInput
-			type="file"
-			multiple
-			(change)="onFilesChange($event)"
-			class="flex-1 rounded border border-gray-300 px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" />
-		<button
-			hlmBtn
-			(click)="upload(fileInput)"
-			[disabled]="selectedFiles.length === 0 || (uploading$ | async)">
-			{{ (uploading$ | async) ? 'Uploading...' : 'Upload' }}
-		</button>
+	<input
+		#fileInput
+		type="file"
+		multiple
+		class="hidden"
+		(change)="onFilesChange($event)" />
+	<input
+		#folderInput
+		type="file"
+		multiple
+		webkitdirectory
+		directory
+		class="hidden"
+		(change)="onFoldersChange($event)" />
+
+	@if (queuedEntries.length === 0) {
+	<div
+		hlmEmpty
+		class="rounded-lg border border-dashed bg-white transition-colors"
+		[class.border-blue-500]="isDragActive"
+		[class.bg-blue-50]="isDragActive"
+		(dragover)="onDragOver($event)"
+		(dragleave)="onDragLeave($event)"
+		(drop)="onDrop($event)">
+		<div hlmEmptyHeader>
+			<div hlmEmptyMedia variant="icon">
+				<ng-icon name="lucideCloudUpload" />
+			</div>
+			<div hlmEmptyTitle>Upload Files or Folders</div>
+			<div hlmEmptyDescription>
+				Drag and drop files or folders here, or use the buttons below.
+			</div>
+		</div>
+		<div hlmEmptyContent>
+			<div class="flex gap-2">
+				<button
+					hlmBtn
+					variant="outline"
+					size="sm"
+					class="gap-2"
+					(click)="openUploadPicker(fileInput)">
+					<ng-icon hlm size="sm" name="lucideFile" />
+					Select files
+				</button>
+				<button
+					hlmBtn
+					variant="outline"
+					size="sm"
+					class="gap-2"
+					(click)="openUploadPicker(folderInput)">
+					<ng-icon hlm size="sm" name="lucideFolder" />
+					Select folder
+				</button>
+			</div>
+		</div>
 	</div>
-	@if (selectedFiles.length > 0) {
-	<p class="text-sm text-gray-600">
-		{{ selectedFiles.length }} file(s) selected (max 10MB each)
-	</p>
+	} @else {
+	<div class="rounded-lg border bg-white">
+		<div
+			class="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3">
+			<div class="text-sm font-medium">
+				Ready to upload ({{ queuedEntries.length }})
+			</div>
+			<div class="flex flex-wrap items-center gap-2">
+				<button
+					hlmBtn
+					variant="outline"
+					size="sm"
+					class="gap-2"
+					(click)="openUploadPicker(fileInput)">
+					<ng-icon hlm size="sm" name="lucideFile" />
+					Add files
+				</button>
+				<button
+					hlmBtn
+					variant="outline"
+					size="sm"
+					class="gap-2"
+					(click)="openUploadPicker(folderInput)">
+					<ng-icon hlm size="sm" name="lucideFolder" />
+					Add folder
+				</button>
+				<button
+					hlmBtn
+					size="sm"
+					class="gap-2"
+					[disabled]="
+						queuedEntries.length === 0 ||
+						(uploading$ | async) ||
+						manualUploading
+					"
+					(click)="upload()">
+					<ng-icon hlm size="sm" name="lucideUpload" />
+					{{ (uploading$ | async) || manualUploading ? 'Uploading...'
+					: 'Start upload' }}
+				</button>
+				<button
+					hlmBtn
+					variant="ghost"
+					size="sm"
+					class="gap-2"
+					[disabled]="queuedEntries.length === 0"
+					(click)="clearQueued()">
+					<ng-icon hlm size="sm" name="lucideListRestart" />
+					Clear queue
+				</button>
+			</div>
+		</div>
+		<ul class="max-h-64 overflow-auto">
+			@for (entry of queuedEntries; track entry.id) {
+			<li
+				class="flex items-center justify-between gap-3 border-b px-4 py-2 text-sm last:border-b-0">
+				<div class="flex min-w-0 items-center gap-2">
+					<ng-icon
+						hlm
+						size="sm"
+						class="text-muted-foreground shrink-0"
+						[name]="entry.relativePath ? 'lucideFolder' : 'lucideFile'" />
+					<span class="truncate">{{ getDisplayName(entry) }}</span>
+				</div>
+				<div
+					class="text-muted-foreground flex shrink-0 items-center gap-2 text-xs">
+					<span>{{ formatSize(entry.file.size) }}</span>
+					<button
+						hlmBtn
+						variant="ghost"
+						size="icon"
+						aria-label="Remove queued file"
+						(click)="removeQueued(entry.id)">
+						<ng-icon hlm size="sm" name="lucideX" />
+					</button>
+				</div>
+			</li>
+			}
+		</ul>
+	</div>
+	} @if (recentlyUploaded.length > 0) {
+	<div class="rounded-lg border bg-white">
+		<div class="border-b px-4 py-3 text-sm font-medium">
+			Recently uploaded
+		</div>
+		<ul class="max-h-48 overflow-auto">
+			@for (entry of recentlyUploaded; track entry) {
+			<li
+				class="text-muted-foreground border-b px-4 py-2 text-sm last:border-b-0">
+				{{ entry }}
+			</li>
+			}
+		</ul>
+	</div>
 	}
 </div>

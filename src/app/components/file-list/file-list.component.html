@@ -1,31 +1,7 @@
 <div class="flex flex-col gap-4">
-	<input
-		#listUploadInput
-		type="file"
-		multiple
-		class="hidden"
-		(change)="onFilesPicked($event, listUploadInput)" />
-	<input
-		#folderUploadInput
-		type="file"
-		multiple
-		webkitdirectory
-		directory
-		class="hidden"
-		(change)="onFoldersPicked($event, folderUploadInput)" />
-
 	<div class="flex flex-wrap items-center justify-between gap-3">
 		<h2 class="text-xl font-semibold">Files</h2>
 		<div class="flex flex-wrap items-center gap-2">
-			<button
-				hlmBtn
-				variant="outline"
-				size="sm"
-				class="gap-2"
-				(click)="openUploadPicker(folderUploadInput)">
-				<ng-icon hlm size="sm" name="lucideUpload" />
-				Upload folder
-			</button>
 			<button
 				hlmBtn
 				variant="outline"
@@ -94,12 +70,7 @@
 	</div>
 
 	<div
-		class="overflow-hidden rounded border bg-white transition-colors"
-		[class.border-blue-500]="isDragActive"
-		[class.bg-blue-50]="isDragActive"
-		(dragover)="onDragOver($event)"
-		(dragleave)="onDragLeave($event)"
-		(drop)="onDrop($event)"
+		class="overflow-hidden rounded border bg-white"
 		[hlmContextMenuTrigger]="listAreaMenu">
 		<div class="overflow-x-auto">
 			<table class="w-full min-w-175 table-fixed text-sm">
@@ -115,10 +86,21 @@
 					@let items = (items$ | async) ?? []; @if (items.length ===
 					0) {
 					<tr>
-						<td
-							colspan="4"
-							class="px-4 py-8 text-center text-gray-500">
-							Drop files/folders here or use upload actions
+						<td colspan="4" class="px-4 py-8">
+							<div
+								hlmEmpty
+								class="rounded-lg border border-dashed">
+								<div hlmEmptyHeader>
+									<div hlmEmptyMedia variant="icon">
+										<ng-icon name="lucideFolder" />
+									</div>
+									<div hlmEmptyTitle>No Items Here</div>
+									<div hlmEmptyDescription>
+										This folder is empty. Upload files or
+										create a new folder to get started.
+									</div>
+								</div>
+							</div>
 						</td>
 					</tr>
 					} @else { @for (item of items; track item.id) {
@@ -213,20 +195,6 @@
 	<ng-template #listAreaMenu>
 		<div hlmDropdownMenu>
 			<div hlmDropdownMenuLabel>List actions</div>
-			<button
-				hlmDropdownMenuItem
-				type="button"
-				(click)="openUploadPicker(listUploadInput)">
-				<ng-icon hlm size="sm" name="lucideUpload" />
-				Upload files
-			</button>
-			<button
-				hlmDropdownMenuItem
-				type="button"
-				(click)="openUploadPicker(folderUploadInput)">
-				<ng-icon hlm size="sm" name="lucideUpload" />
-				Upload folder
-			</button>
 			<button hlmDropdownMenuItem type="button" (click)="createFolder()">
 				<ng-icon hlm size="sm" name="lucideFolderPlus" />
 				Create folder

@@ -12,19 +12,25 @@ function mapApiError(error: unknown): string {
 	const httpError = error as HttpErrorResponse;
 	const code = httpError?.error?.code;
 
+	if (httpError?.status === 0) {
+		return 'Cannot reach the server. Please check your connection and try again.';
+	}
 	if (code === 'DUPLICATE' || code === 'DUPLICATE_FOLDER') {
-		return httpError?.error?.desc ?? 'Duplicate name in this location';
+		return (
+			httpError?.error?.desc ??
+			'An item with the same name already exists in this location.'
+		);
 	}
 	if (code === 'DUPLICATE_NAME') {
-		return 'An item with this name already exists in this location';
+		return 'An item with this name already exists in this location.';
 	}
 	if (code === 'FOLDER_NOT_EMPTY') {
-		return 'Cannot delete folder that contains items';
+		return 'This folder is not empty. Remove its contents first.';
 	}
 	if (code === 'INVALID_PARENT') {
-		return 'Invalid parent folder';
+		return 'The selected destination folder is invalid.';
 	}
-	return httpError?.error?.desc ?? 'Unexpected server error';
+	return httpError?.error?.desc ?? 'An unexpected server error occurred.';
 }
 
 @Injectable()
@@ -131,7 +137,9 @@ export class FolderEffects {
 		() =>
 			this.actions$.pipe(
 				ofType(FolderActions.createFolderFailure),
-				tap(({ error }) => toast.error(error))
+				tap(({ error }) =>
+					toast.error(`Create folder failed: ${error}`)
+				)
 			),
 		{ dispatch: false }
 	);
@@ -149,7 +157,9 @@ export class FolderEffects {
 		() =>
 			this.actions$.pipe(
 				ofType(FolderActions.renameFolderFailure),
-				tap(({ error }) => toast.error(error))
+				tap(({ error }) =>
+					toast.error(`Rename folder failed: ${error}`)
+				)
 			),
 		{ dispatch: false }
 	);
@@ -167,7 +177,7 @@ export class FolderEffects {
 		() =>
 			this.actions$.pipe(
 				ofType(FolderActions.moveFolderFailure),
-				tap(({ error }) => toast.error(error))
+				tap(({ error }) => toast.error(`Move folder failed: ${error}`))
 			),
 		{ dispatch: false }
 	);
@@ -185,7 +195,9 @@ export class FolderEffects {
 		() =>
 			this.actions$.pipe(
 				ofType(FolderActions.deleteFolderFailure),
-				tap(({ error }) => toast.error(error))
+				tap(({ error }) =>
+					toast.error(`Delete folder failed: ${error}`)
+				)
 			),
 		{ dispatch: false }
 	);

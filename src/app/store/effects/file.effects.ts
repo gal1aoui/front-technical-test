@@ -20,22 +20,28 @@ function mapApiError(error: unknown): string {
 	const httpError = error as HttpErrorResponse;
 	const code = httpError?.error?.code;
 
+	if (httpError?.status === 0) {
+		return 'Cannot reach the server. Please check your connection and try again.';
+	}
 	if (code === 'FILESIZE_LIMIT_EXCEEDED') {
-		return 'File size exceeds 10MB limit';
+		return 'One or more files exceed the 10 MB size limit.';
 	}
 	if (code === 'DUPLICATE' || code === 'DUPLICATE_FOLDER') {
-		return httpError?.error?.desc ?? 'Duplicate name in this location';
+		return (
+			httpError?.error?.desc ??
+			'A file with the same name already exists in this location.'
+		);
 	}
 	if (code === 'DUPLICATE_NAME') {
-		return 'An item with this name already exists in this location';
+		return 'An item with this name already exists in this location.';
 	}
 	if (code === 'FOLDER_NOT_EMPTY') {
-		return 'Cannot delete folder that contains items';
+		return 'This folder is not empty. Remove its contents first.';
 	}
 	if (code === 'INVALID_PARENT') {
-		return 'Invalid parent folder';
+		return 'The selected destination folder is invalid.';
 	}
-	return httpError?.error?.desc ?? 'Unexpected server error';
+	return httpError?.error?.desc ?? 'An unexpected server error occurred.';
 }
 
 @Injectable()
@@ -169,8 +175,10 @@ export class FileEffects {
 					this.fileService.download(itemId).pipe(
 						tap(blob => this.saveBlob(blob, name)),
 						tap(() => toast.success(`Downloaded ${name}`)),
-						catchError(() => {
-							toast.error('Download failed');
+						catchError(error => {
+							toast.error(
+								`Download failed: ${mapApiError(error)}`
+							);
 							return EMPTY;
 						})
 					)
@@ -192,7 +200,7 @@ export class FileEffects {
 		() =>
 			this.actions$.pipe(
 				ofType(FileActions.uploadFilesFailure),
-				tap(({ error }) => toast.error(error))
+				tap(({ error }) => toast.error(`Upload failed: ${error}`))
 			),
 		{ dispatch: false }
 	);
@@ -201,7 +209,9 @@ export class FileEffects {
 		() =>
 			this.actions$.pipe(
 				ofType(FileActions.loadItemsFailure),
-				tap(({ error }) => toast.error(error))
+				tap(({ error }) =>
+					toast.error(`Could not load files and folders: ${error}`)
+				)
 			),
 		{ dispatch: false }
 	);
@@ -219,7 +229,7 @@ export class FileEffects {
 		() =>
 			this.actions$.pipe(
 				ofType(FileActions.renameFileFailure),
-				tap(({ error }) => toast.error(error))
+				tap(({ error }) => toast.error(`Rename failed: ${error}`))
 			),
 		{ dispatch: false }
 	);
@@ -237,7 +247,7 @@ export class FileEffects {
 		() =>
 			this.actions$.pipe(
 				ofType(FileActions.moveFileFailure),
-				tap(({ error }) => toast.error(error))
+				tap(({ error }) => toast.error(`Move failed: ${error}`))
 			),
 		{ dispatch: false }
 	);
@@ -255,7 +265,7 @@ export class FileEffects {
 		() =>
 			this.actions$.pipe(
 				ofType(FileActions.deleteFileFailure),
-				tap(({ error }) => toast.error(error))
+				tap(({ error }) => toast.error(`Delete failed: ${error}`))
 			),
 		{ dispatch: false }
 	);

@@ -185,12 +185,10 @@ router.get('/items/:itemId', (req, res) => {
 
 		const filePath = path.join(__dirname, 'uploads', item.filePath);
 		if (!fs.existsSync(filePath)) {
-			return res
-				.status(404)
-				.json({
-					code: 'FILE_NOT_FOUND',
-					desc: 'File not found on server',
-				});
+			return res.status(404).json({
+				code: 'FILE_NOT_FOUND',
+				desc: 'File not found on server',
+			});
 		}
 
 		res.download(filePath, item.name);
