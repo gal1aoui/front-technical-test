@@ -1,4 +1,5 @@
 import {
+	ChangeDetectorRef,
 	ChangeDetectionStrategy,
 	Component,
 	DestroyRef,
@@ -35,11 +36,16 @@ import { HlmDropdownMenuImports } from '@spartan-ng/helm/dropdown-menu';
 import { HlmEmptyImports } from '@spartan-ng/helm/empty';
 import { HlmIconImports } from '@spartan-ng/helm/icon';
 import { toast } from 'ngx-sonner';
-import { combineLatest, map } from 'rxjs';
+import { combineLatest, firstValueFrom, map } from 'rxjs';
+import { FileManagerService } from '../../services/file-manager.service';
 import { FileActions } from '../../store/actions/file.actions';
 import { FolderActions } from '../../store/actions/folder.actions';
 import { MoveItemDialogComponent } from '../move-item-dialog/move-item-dialog.component';
 import { ItemDialogComponent } from '../item-dialog/item-dialog.component';
+import {
+	UploadCandidate,
+	dataTransferToUploadCandidates,
+} from '../../utils/upload-candidates.util';
 import {
 	selectAllItems,
 	selectFileError,
@@ -53,6 +59,8 @@ import {
 	selectFolderError,
 	selectFolderMoveTargets,
 } from '../../store/selectors/folder.selectors';
+
+const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
 @Component({
 	selector: 'ic-file-list',
@@ -87,11 +95,14 @@ import {
 })
 export class FileListComponent implements OnInit {
 	private readonly store = inject(Store);
+	private readonly cdr = inject(ChangeDetectorRef);
 	private readonly destroyRef = inject(DestroyRef);
+	private readonly fileService = inject(FileManagerService);
 	private allItems: FileItem[] = [];
 	private currentParentId: string | null = null;
 	private moveTargets: Array<{ id: string | null; label: string }> = [];
 	private blockedMoveTargetIds = new Set<string>();
+	private dragDepth = 0;
 	dialogState: BrnDialogState = 'closed';
 	dialogName = '';
 	dialogMode: 'create' | 'rename' = 'create';
@@ -100,6 +111,8 @@ export class FileListComponent implements OnInit {
 	moveDialogTarget: FileItem | null = null;
 	moveDialogParentId: string | null = null;
 	moveDialogOptions: Array<{ id: string | null; label: string }> = [];
+	isDragActive = false;
+	manualDropUploading = false;
 
 	readonly items$ = this.store.select(selectCurrentItems);
 	readonly breadcrumbs$ = this.store.select(selectBreadcrumbs);
@@ -192,6 +205,72 @@ export class FileListComponent implements OnInit {
 
 	onRowContextMenu(event: MouseEvent): void {
 		event.stopPropagation();
+	}
+
+	onDragEnter(event: DragEvent): void {
+		event.preventDefault();
+		this.dragDepth += 1;
+		if (!this.isDragActive) {
+			this.isDragActive = true;
+			this.cdr.markForCheck();
+		}
+	}
+
+	onDragOver(event: DragEvent): void {
+		event.preventDefault();
+		if (!this.isDragActive) {
+			this.isDragActive = true;
+			this.cdr.markForCheck();
+		}
+	}
+
+	onDragLeave(event: DragEvent): void {
+		event.preventDefault();
+		this.dragDepth = Math.max(0, this.dragDepth - 1);
+		if (this.dragDepth === 0 && this.isDragActive) {
+			this.isDragActive = false;
+			this.cdr.markForCheck();
+		}
+	}
+
+	async onDrop(event: DragEvent): Promise<void> {
+		event.preventDefault();
+		this.dragDepth = 0;
+		this.isDragActive = false;
+		this.cdr.markForCheck();
+
+		if (this.manualDropUploading) return;
+		const transfer = event.dataTransfer;
+		if (!transfer) return;
+
+		const entries = await dataTransferToUploadCandidates(transfer);
+		if (entries.length === 0) {
+			toast.error('No files were detected in the drop action.');
+			return;
+		}
+
+		const tooLarge = entries.find(entry => entry.file.size > MAX_SIZE);
+		if (tooLarge) {
+			toast.error(
+				`Upload blocked: "${tooLarge.file.name}" exceeds the 10 MB limit.`
+			);
+			return;
+		}
+
+		const hasFolders = entries.some(
+			entry => !!entry.relativePath && entry.relativePath.includes('/')
+		);
+
+		if (!hasFolders) {
+			this.store.dispatch(
+				FileActions.uploadFiles({
+					files: entries.map(entry => entry.file),
+				})
+			);
+			return;
+		}
+
+		await this.uploadFolderEntries(entries);
 	}
 
 	formatSize(bytes: number): string {
@@ -338,6 +417,98 @@ export class FileListComponent implements OnInit {
 			path: buildItemPath(item, this.allItems),
 			size: item.folder ? '-' : this.formatSize(item.size || 0),
 		};
+	}
+
+	private async uploadFolderEntries(
+		entries: UploadCandidate[]
+	): Promise<void> {
+		this.manualDropUploading = true;
+		this.cdr.markForCheck();
+
+		try {
+			const filesByParent = new Map<string | null, File[]>();
+			const folderIdByPath = new Map<string, string | null>([
+				['', this.currentParentId],
+			]);
+
+			for (const entry of entries) {
+				const relativePath = entry.relativePath ?? entry.file.name;
+				const pathParts = relativePath.split('/').filter(Boolean);
+				if (pathParts.length === 0) continue;
+
+				const fileName = pathParts[pathParts.length - 1];
+				const folderParts = pathParts.slice(0, -1);
+				let currentPath = '';
+				let parentId = this.currentParentId;
+
+				for (const segment of folderParts) {
+					currentPath = currentPath
+						? `${currentPath}/${segment}`
+						: segment;
+
+					if (folderIdByPath.has(currentPath)) {
+						parentId = folderIdByPath.get(currentPath) ?? null;
+						continue;
+					}
+
+					const existingFolderId = this.findExistingFolderId(
+						segment,
+						parentId
+					);
+
+					if (existingFolderId) {
+						parentId = existingFolderId;
+						folderIdByPath.set(currentPath, parentId);
+						continue;
+					}
+
+					const created = await firstValueFrom(
+						this.fileService.createFolder(segment, parentId)
+					);
+					parentId = created?.item.id ?? null;
+					folderIdByPath.set(currentPath, parentId);
+					if (created?.item) {
+						this.allItems = [...this.allItems, created.item];
+					}
+				}
+
+				const renamedFile = new File([entry.file], fileName, {
+					type: entry.file.type,
+					lastModified: entry.file.lastModified,
+				});
+				const targetList = filesByParent.get(parentId) ?? [];
+				targetList.push(renamedFile);
+				filesByParent.set(parentId, targetList);
+			}
+
+			for (const [parentId, files] of filesByParent.entries()) {
+				await firstValueFrom(
+					this.fileService.uploadFiles(files, parentId)
+				);
+			}
+
+			this.store.dispatch(FileActions.loadItems());
+			toast.success(`Uploaded ${entries.length} file(s)`);
+		} catch (error) {
+			console.error(error);
+			toast.error(
+				'Upload failed: unable to process one or more dropped folders.'
+			);
+		} finally {
+			this.manualDropUploading = false;
+			this.cdr.markForCheck();
+		}
+	}
+
+	private findExistingFolderId(
+		name: string,
+		parentId: string | null
+	): string | null {
+		const match = this.allItems.find(
+			item =>
+				item.folder && item.parentId === parentId && item.name === name
+		);
+		return match?.id ?? null;
 	}
 
 	private getDescendantFolderIds(folderId: string): Set<string> {

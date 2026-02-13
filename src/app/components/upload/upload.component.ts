@@ -1,4 +1,5 @@
 import {
+	ChangeDetectorRef,
 	ChangeDetectionStrategy,
 	Component,
 	DestroyRef,
@@ -26,30 +27,17 @@ import { FileManagerService } from '../../services/file-manager.service';
 import { FileItem } from '../../models/file-item.model';
 import { FileActions } from '../../store/actions/file.actions';
 import {
+	UploadCandidate,
+	dataTransferToUploadCandidates,
+	filesToUploadCandidates,
+} from '../../utils/upload-candidates.util';
+import {
 	selectAllItems,
 	selectFileUploading,
 } from '../../store/selectors/file.selectors';
 import { selectCurrentParentId } from '../../store/selectors/folder.selectors';
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
-
-type UploadCandidate = {
-	id: string;
-	file: File;
-	relativePath?: string;
-};
-
-type DropDirectoryReader = {
-	readEntries: (callback: (entries: FileSystemEntry[]) => void) => void;
-};
-
-type DropFileEntry = FileSystemEntry & {
-	file: (success: (file: File) => void, error?: () => void) => void;
-};
-
-type DropDirectoryEntry = FileSystemEntry & {
-	createReader: () => DropDirectoryReader;
-};
 
 @Component({
 	selector: 'ic-upload',
@@ -70,10 +58,12 @@ type DropDirectoryEntry = FileSystemEntry & {
 })
 export class UploadComponent implements OnInit {
 	private readonly store = inject(Store);
+	private readonly cdr = inject(ChangeDetectorRef);
 	private readonly destroyRef = inject(DestroyRef);
 	private readonly fileService = inject(FileManagerService);
 	private allItems: FileItem[] = [];
 	private currentParentId: string | null = null;
+	private dragDepth = 0;
 
 	queuedEntries: UploadCandidate[] = [];
 	recentlyUploaded: string[] = [];
@@ -105,10 +95,9 @@ export class UploadComponent implements OnInit {
 	onFilesChange(e: Event): void {
 		const input = e.target as HTMLInputElement;
 		if (input.files && input.files.length) {
-			const selected = Array.from(input.files).map(file =>
-				this.toCandidate(file)
+			this.queueCandidates(
+				filesToUploadCandidates(Array.from(input.files))
 			);
-			this.queueCandidates(selected);
 		}
 		input.value = '';
 	}
@@ -118,35 +107,46 @@ export class UploadComponent implements OnInit {
 		const files = input.files ? Array.from(input.files) : [];
 
 		if (files.length === 0) return;
-		this.queueCandidates(
-			files.map(file =>
-				this.toCandidate(file, this.readRelativePath(file))
-			)
-		);
+		this.queueCandidates(filesToUploadCandidates(files, true));
 		input.value = '';
+	}
+
+	onDragEnter(event: DragEvent): void {
+		event.preventDefault();
+		this.dragDepth += 1;
+		if (!this.isDragActive) {
+			this.isDragActive = true;
+			this.cdr.markForCheck();
+		}
 	}
 
 	onDragOver(event: DragEvent): void {
 		event.preventDefault();
-		this.isDragActive = true;
+		if (!this.isDragActive) {
+			this.isDragActive = true;
+			this.cdr.markForCheck();
+		}
 	}
 
 	onDragLeave(event: DragEvent): void {
 		event.preventDefault();
-		const currentTarget = event.currentTarget as HTMLElement | null;
-		const related = event.relatedTarget as Node | null;
-		if (currentTarget && related && currentTarget.contains(related)) return;
-		this.isDragActive = false;
+		this.dragDepth = Math.max(0, this.dragDepth - 1);
+		if (this.dragDepth === 0 && this.isDragActive) {
+			this.isDragActive = false;
+			this.cdr.markForCheck();
+		}
 	}
 
 	async onDrop(event: DragEvent): Promise<void> {
 		event.preventDefault();
+		this.dragDepth = 0;
 		this.isDragActive = false;
+		this.cdr.markForCheck();
 
 		const transfer = event.dataTransfer;
 		if (!transfer) return;
 
-		const entries = await this.collectDropEntries(transfer);
+		const entries = await dataTransferToUploadCandidates(transfer);
 		if (entries.length === 0) return;
 		this.queueCandidates(entries);
 	}
@@ -155,10 +155,12 @@ export class UploadComponent implements OnInit {
 		this.queuedEntries = this.queuedEntries.filter(
 			entry => entry.id !== entryId
 		);
+		this.cdr.markForCheck();
 	}
 
 	clearQueued(): void {
 		this.queuedEntries = [];
+		this.cdr.markForCheck();
 	}
 
 	upload(): void {
@@ -179,6 +181,7 @@ export class UploadComponent implements OnInit {
 				this.getDisplayName(entry)
 			);
 			this.queuedEntries = [];
+			this.cdr.markForCheck();
 			return;
 		}
 
@@ -204,6 +207,7 @@ export class UploadComponent implements OnInit {
 			toast.error(
 				`Upload blocked: "${tooLarge.file.name}" exceeds the 10 MB limit.`
 			);
+			this.cdr.markForCheck();
 			return;
 		}
 
@@ -214,6 +218,7 @@ export class UploadComponent implements OnInit {
 			unique.set(entry.id, entry);
 		}
 		this.queuedEntries = Array.from(unique.values());
+		this.cdr.markForCheck();
 	}
 
 	private async uploadFolderEntries(
@@ -286,29 +291,17 @@ export class UploadComponent implements OnInit {
 			);
 			this.queuedEntries = [];
 			toast.success(`Uploaded ${entries.length} file(s)`);
+			this.cdr.markForCheck();
 		} catch (error) {
 			console.error(error);
 			toast.error(
 				'Upload failed: unable to process one or more folders.'
 			);
+			this.cdr.markForCheck();
 		} finally {
 			this.manualUploading = false;
+			this.cdr.markForCheck();
 		}
-	}
-
-	private readRelativePath(file: File): string {
-		const extendedFile = file as File & { webkitRelativePath?: string };
-		const relativePath = extendedFile.webkitRelativePath?.trim();
-		return relativePath || file.name;
-	}
-
-	private toCandidate(file: File, relativePath?: string): UploadCandidate {
-		const keyPath = relativePath || file.name;
-		return {
-			id: `${keyPath}:${file.size}:${file.lastModified}`,
-			file,
-			relativePath,
-		};
 	}
 
 	private findExistingFolderId(
@@ -320,82 +313,5 @@ export class UploadComponent implements OnInit {
 				item.folder && item.parentId === parentId && item.name === name
 		);
 		return match?.id ?? null;
-	}
-
-	private async collectDropEntries(
-		transfer: DataTransfer
-	): Promise<UploadCandidate[]> {
-		const items = transfer.items ? Array.from(transfer.items) : [];
-		if (items.length === 0) {
-			const files = transfer.files ? Array.from(transfer.files) : [];
-			return files.map(file => this.toCandidate(file));
-		}
-
-		const collected: UploadCandidate[] = [];
-		for (const item of items) {
-			const maybeEntry = item.webkitGetAsEntry?.();
-			if (!maybeEntry) {
-				const file = item.getAsFile();
-				if (file) collected.push(this.toCandidate(file));
-				continue;
-			}
-
-			await this.collectEntryFiles(maybeEntry, '', collected);
-		}
-
-		return collected;
-	}
-
-	private async collectEntryFiles(
-		entry: FileSystemEntry,
-		parentPath: string,
-		target: UploadCandidate[]
-	): Promise<void> {
-		if (entry.isFile) {
-			const fileEntry = entry as DropFileEntry;
-			const file = await new Promise<File | null>(resolve => {
-				fileEntry.file(
-					(resolved: File) => resolve(resolved),
-					() => resolve(null)
-				);
-			});
-			if (!file) return;
-			const path = parentPath ? `${parentPath}/${file.name}` : file.name;
-			target.push(this.toCandidate(file, path));
-			return;
-		}
-
-		if (!entry.isDirectory) return;
-		const directoryEntry = entry as DropDirectoryEntry;
-		const reader = directoryEntry.createReader();
-		const children = await this.readAllDirectoryEntries(reader);
-		const nextParent = parentPath
-			? `${parentPath}/${entry.name}`
-			: entry.name;
-		for (const child of children) {
-			await this.collectEntryFiles(child, nextParent, target);
-		}
-	}
-
-	private async readAllDirectoryEntries(
-		reader: DropDirectoryReader
-	): Promise<FileSystemEntry[]> {
-		const results: FileSystemEntry[] = [];
-		let done = false;
-
-		while (!done) {
-			const chunk = await new Promise<FileSystemEntry[]>(resolve =>
-				reader.readEntries((entries: FileSystemEntry[]) =>
-					resolve(entries)
-				)
-			);
-			if (chunk.length === 0) {
-				done = true;
-				continue;
-			}
-			results.push(...chunk);
-		}
-
-		return results;
 	}
 }

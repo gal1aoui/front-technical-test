@@ -70,8 +70,20 @@
 	</div>
 
 	<div
-		class="overflow-hidden rounded border bg-white"
+		class="relative overflow-hidden rounded border bg-white transition-colors"
+		[class.border-blue-500]="isDragActive"
+		[class.bg-blue-50]="isDragActive"
+		(dragenter)="onDragEnter($event)"
+		(dragover)="onDragOver($event)"
+		(dragleave)="onDragLeave($event)"
+		(drop)="onDrop($event)"
 		[hlmContextMenuTrigger]="listAreaMenu">
+		@if (isDragActive) {
+		<div
+			class="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-blue-50/90 px-4 text-center text-sm font-medium text-blue-700">
+			Drop files or folders to upload in this location
+		</div>
+		}
 		<div class="overflow-x-auto">
 			<table class="w-full min-w-175 table-fixed text-sm">
 				<thead class="border-b bg-gray-50 text-sm font-medium">

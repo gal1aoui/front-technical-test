@@ -1,4 +1,9 @@
-<div class="flex flex-col gap-4">
+<div
+	class="relative flex flex-col gap-4"
+	(dragenter)="onDragEnter($event)"
+	(dragover)="onDragOver($event)"
+	(dragleave)="onDragLeave($event)"
+	(drop)="onDrop($event)">
 	<input
 		#fileInput
 		type="file"
@@ -14,15 +19,15 @@
 		class="hidden"
 		(change)="onFoldersChange($event)" />
 
-	@if (queuedEntries.length === 0) {
+	@if (isDragActive) {
+	<div
+		class="pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-lg border-2 border-dashed border-blue-500 bg-blue-50/90 px-4 text-center text-sm font-medium text-blue-700">
+		Drop files or folders to add them to the upload queue
+	</div>
+	} @if (queuedEntries.length === 0) {
 	<div
 		hlmEmpty
-		class="rounded-lg border border-dashed bg-white transition-colors"
-		[class.border-blue-500]="isDragActive"
-		[class.bg-blue-50]="isDragActive"
-		(dragover)="onDragOver($event)"
-		(dragleave)="onDragLeave($event)"
-		(drop)="onDrop($event)">
+		class="rounded-lg border border-dashed bg-white transition-colors">
 		<div hlmEmptyHeader>
 			<div hlmEmptyMedia variant="icon">
 				<ng-icon name="lucideCloudUpload" />
