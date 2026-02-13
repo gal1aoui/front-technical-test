@@ -37,8 +37,8 @@ jobs:
       - name: Lint
         run: npm run lint
       # This step will be disabled due to ignored libs folder in the purpose of clear review process
-      - name: Build
-        run: npm run build
+      # - name: Build
+      #   run: npm run build
 
   api:
     name: API Smoke Test
