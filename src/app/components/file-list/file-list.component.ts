@@ -163,7 +163,9 @@ export class FileListComponent implements OnInit {
 	}
 
 	goToFolder(folderId: string): void {
-		this.store.dispatch(FolderActions.setCurrentFolder({ parentId: folderId }));
+		this.store.dispatch(
+			FolderActions.setCurrentFolder({ parentId: folderId })
+		);
 	}
 
 	goUp(currentFolder: FileItem | null): void {
@@ -173,7 +175,9 @@ export class FileListComponent implements OnInit {
 
 	openFolder(item: FileItem): void {
 		if (!item.folder) return;
-		this.store.dispatch(FolderActions.setCurrentFolder({ parentId: item.id }));
+		this.store.dispatch(
+			FolderActions.setCurrentFolder({ parentId: item.id })
+		);
 	}
 
 	createFolder(): void {
@@ -319,7 +323,10 @@ export class FileListComponent implements OnInit {
 
 		if (this.dialogTarget.folder) {
 			this.store.dispatch(
-				FolderActions.renameFolder({ itemId: this.dialogTarget.id, name })
+				FolderActions.renameFolder({
+					itemId: this.dialogTarget.id,
+					name,
+				})
 			);
 		} else {
 			this.store.dispatch(
@@ -334,11 +341,15 @@ export class FileListComponent implements OnInit {
 			? this.getDescendantFolderIds(item.id)
 			: new Set<string>();
 
-		this.blockedMoveTargetIds = new Set<string>([item.id, ...descendantIds]);
+		this.blockedMoveTargetIds = new Set<string>([
+			item.id,
+			...descendantIds,
+		]);
 		this.moveDialogTarget = item;
 		this.moveDialogParentId = item.parentId ?? null;
 		this.moveDialogOptions = this.moveTargets.filter(
-			target => target.id === null || !this.blockedMoveTargetIds.has(target.id)
+			target =>
+				target.id === null || !this.blockedMoveTargetIds.has(target.id)
 		);
 		this.moveDialogState = 'open';
 	}
@@ -369,7 +380,9 @@ export class FileListComponent implements OnInit {
 			return;
 		}
 		if (targetId && this.blockedMoveTargetIds.has(targetId)) {
-			toast.error('Cannot move a folder into itself or one of its children');
+			toast.error(
+				'Cannot move a folder into itself or one of its children'
+			);
 			return;
 		}
 
@@ -435,7 +448,9 @@ export class FileListComponent implements OnInit {
 
 		if (!hasFolders) {
 			this.store.dispatch(
-				FileActions.uploadFiles({ files: entries.map(entry => entry.file) })
+				FileActions.uploadFiles({
+					files: entries.map(entry => entry.file),
+				})
 			);
 			return;
 		}
@@ -443,7 +458,9 @@ export class FileListComponent implements OnInit {
 		void this.uploadFolderEntries(entries);
 	}
 
-	private async uploadFolderEntries(entries: UploadCandidate[]): Promise<void> {
+	private async uploadFolderEntries(
+		entries: UploadCandidate[]
+	): Promise<void> {
 		try {
 			const filesByParent = new Map<string | null, File[]>();
 			const folderIdByPath = new Map<string, string | null>([
@@ -461,13 +478,18 @@ export class FileListComponent implements OnInit {
 				let parentId = this.currentParentId;
 
 				for (const segment of folderParts) {
-					currentPath = currentPath ? `${currentPath}/${segment}` : segment;
+					currentPath = currentPath
+						? `${currentPath}/${segment}`
+						: segment;
 					if (folderIdByPath.has(currentPath)) {
 						parentId = folderIdByPath.get(currentPath) ?? null;
 						continue;
 					}
 
-					const existingFolderId = this.findExistingFolderId(segment, parentId);
+					const existingFolderId = this.findExistingFolderId(
+						segment,
+						parentId
+					);
 					if (existingFolderId) {
 						parentId = existingFolderId;
 						folderIdByPath.set(currentPath, parentId);
@@ -494,7 +516,9 @@ export class FileListComponent implements OnInit {
 			}
 
 			for (const [parentId, files] of filesByParent.entries()) {
-				await firstValueFrom(this.fileService.uploadFiles(files, parentId));
+				await firstValueFrom(
+					this.fileService.uploadFiles(files, parentId)
+				);
 			}
 
 			this.store.dispatch(FileActions.loadItems());
@@ -558,7 +582,9 @@ export class FileListComponent implements OnInit {
 		const directoryEntry = entry as DropDirectoryEntry;
 		const reader = directoryEntry.createReader();
 		const children = await this.readAllDirectoryEntries(reader);
-		const nextParent = parentPath ? `${parentPath}/${entry.name}` : entry.name;
+		const nextParent = parentPath
+			? `${parentPath}/${entry.name}`
+			: entry.name;
 		for (const child of children) {
 			await this.collectEntryFiles(child, nextParent, target);
 		}
@@ -572,7 +598,9 @@ export class FileListComponent implements OnInit {
 
 		while (!done) {
 			const chunk = await new Promise<FileSystemEntry[]>(resolve =>
-				reader.readEntries((entries: FileSystemEntry[]) => resolve(entries))
+				reader.readEntries((entries: FileSystemEntry[]) =>
+					resolve(entries)
+				)
 			);
 			if (chunk.length === 0) {
 				done = true;
@@ -589,7 +617,8 @@ export class FileListComponent implements OnInit {
 		parentId: string | null
 	): string | null {
 		const match = this.allItems.find(
-			item => item.folder && item.parentId === parentId && item.name === name
+			item =>
+				item.folder && item.parentId === parentId && item.name === name
 		);
 		return match?.id ?? null;
 	}

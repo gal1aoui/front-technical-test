@@ -65,7 +65,8 @@ router.post('/items', upload.array('files', 10), (req, res) => {
 						errors.push({
 							filename: file.originalname,
 							error: 'DUPLICATE',
-							message: 'A file with this name already exists in this location',
+							message:
+								'A file with this name already exists in this location',
 						});
 						return;
 					}
@@ -186,15 +187,19 @@ router.get('/items/:itemId', (req, res) => {
 		if (!fs.existsSync(filePath)) {
 			return res
 				.status(404)
-				.json({ code: 'FILE_NOT_FOUND', desc: 'File not found on server' });
+				.json({
+					code: 'FILE_NOT_FOUND',
+					desc: 'File not found on server',
+				});
 		}
 
 		res.download(filePath, item.name);
 	} catch (error) {
 		console.error('Error downloading file:', error);
-		res
-			.status(500)
-			.json({ code: 'SERVER_ERROR', desc: 'Internal server error' });
+		res.status(500).json({
+			code: 'SERVER_ERROR',
+			desc: 'Internal server error',
+		});
 	}
 });
 
@@ -235,9 +240,10 @@ router.delete('/items/:itemId', (req, res) => {
 		res.status(204).send();
 	} catch (error) {
 		console.error('Error deleting item:', error);
-		res
-			.status(500)
-			.json({ code: 'SERVER_ERROR', desc: 'Internal server error' });
+		res.status(500).json({
+			code: 'SERVER_ERROR',
+			desc: 'Internal server error',
+		});
 	}
 });
 
@@ -305,9 +311,10 @@ router.patch('/items/:itemId', (req, res) => {
 		res.json(item);
 	} catch (error) {
 		console.error('Error updating item:', error);
-		res
-			.status(500)
-			.json({ code: 'SERVER_ERROR', desc: 'Internal server error' });
+		res.status(500).json({
+			code: 'SERVER_ERROR',
+			desc: 'Internal server error',
+		});
 	}
 });
 
@@ -336,9 +343,10 @@ router.get('/items/:itemId/path', (req, res) => {
 		res.json({ items: pathItems });
 	} catch (error) {
 		console.error('Error getting item path:', error);
-		res
-			.status(500)
-			.json({ code: 'SERVER_ERROR', desc: 'Internal server error' });
+		res.status(500).json({
+			code: 'SERVER_ERROR',
+			desc: 'Internal server error',
+		});
 	}
 });
 

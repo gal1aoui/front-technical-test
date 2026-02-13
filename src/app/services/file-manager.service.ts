@@ -44,7 +44,9 @@ export class FileManagerService {
 	}
 
 	renameItem(itemId: string, name: string): Observable<FileItem> {
-		return this.http.patch<FileItem>(`${this.base}/items/${itemId}`, { name });
+		return this.http.patch<FileItem>(`${this.base}/items/${itemId}`, {
+			name,
+		});
 	}
 
 	moveItem(itemId: string, parentId: string | null): Observable<FileItem> {

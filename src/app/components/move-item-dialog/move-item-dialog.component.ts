@@ -14,7 +14,12 @@ import { FileItem, FileItemDetails } from '../../models/file-item.model';
 @Component({
 	selector: 'ic-move-item-dialog',
 	standalone: true,
-	imports: [CommonModule, BrnDialogContent, HlmButtonImports, HlmDialogImports],
+	imports: [
+		CommonModule,
+		BrnDialogContent,
+		HlmButtonImports,
+		HlmDialogImports,
+	],
 	templateUrl: './move-item-dialog.component.html',
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -26,7 +31,9 @@ export class MoveItemDialogComponent {
 	@Input() options: Array<{ id: string | null; label: string }> = [];
 
 	@Output() readonly stateChange = new EventEmitter<BrnDialogState>();
-	@Output() readonly selectedParentIdChange = new EventEmitter<string | null>();
+	@Output() readonly selectedParentIdChange = new EventEmitter<
+		string | null
+	>();
 	@Output() readonly submitted = new EventEmitter<void>();
 	@Output() readonly cancelled = new EventEmitter<void>();
 

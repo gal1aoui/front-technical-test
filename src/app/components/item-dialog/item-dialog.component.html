@@ -5,23 +5,24 @@
 				{{ mode === 'rename' ? 'Rename item' : 'Create folder' }}
 			</h3>
 			<p hlmDialogDescription>
-				@if (mode === 'rename') { Update the selected item name. } @else {
-				Create a new folder in the current directory. }
+				@if (mode === 'rename') { Update the selected item name. } @else
+				{ Create a new folder in the current directory. }
 			</p>
 		</hlm-dialog-header>
 
 		@if (mode === 'rename' && target && details) {
 		<div class="rounded border bg-gray-50 p-3 text-sm text-gray-700">
 			<div>
-				<span class="font-medium">Filename:</span> {{ details.fileName }}
+				<span class="font-medium">Filename:</span> {{ details.fileName
+				}}
 			</div>
 			<div>
 				<span class="font-medium">File extension:</span>
 				{{ details.fileExtension }}
 			</div>
 			<div>
-				<span class="font-medium">Creation date:</span> {{ details.creationDate
-				}}
+				<span class="font-medium">Creation date:</span> {{
+				details.creationDate }}
 			</div>
 			<div><span class="font-medium">Path:</span> {{ details.path }}</div>
 			<div><span class="font-medium">Size:</span> {{ details.size }}</div>
@@ -29,7 +30,9 @@
 		}
 
 		<div class="grid gap-2">
-			<label class="text-sm font-medium" for="item-name-input">Name</label>
+			<label class="text-sm font-medium" for="item-name-input"
+				>Name</label
+			>
 			<input
 				id="item-name-input"
 				type="text"

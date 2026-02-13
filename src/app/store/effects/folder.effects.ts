@@ -39,7 +39,11 @@ export class FolderEffects {
 				this.fileService.createFolder(name, parentId).pipe(
 					map(() => FolderActions.createFolderSuccess({ name })),
 					catchError(error =>
-						of(FolderActions.createFolderFailure({ error: mapApiError(error) }))
+						of(
+							FolderActions.createFolderFailure({
+								error: mapApiError(error),
+							})
+						)
 					)
 				)
 			)
@@ -53,7 +57,11 @@ export class FolderEffects {
 				this.fileService.renameItem(itemId, name).pipe(
 					map(() => FolderActions.renameFolderSuccess({ name })),
 					catchError(error =>
-						of(FolderActions.renameFolderFailure({ error: mapApiError(error) }))
+						of(
+							FolderActions.renameFolderFailure({
+								error: mapApiError(error),
+							})
+						)
 					)
 				)
 			)
@@ -65,9 +73,15 @@ export class FolderEffects {
 			ofType(FolderActions.moveFolder),
 			exhaustMap(({ itemId, parentId }) =>
 				this.fileService.moveItem(itemId, parentId).pipe(
-					map(item => FolderActions.moveFolderSuccess({ name: item.name })),
+					map(item =>
+						FolderActions.moveFolderSuccess({ name: item.name })
+					),
 					catchError(error =>
-						of(FolderActions.moveFolderFailure({ error: mapApiError(error) }))
+						of(
+							FolderActions.moveFolderFailure({
+								error: mapApiError(error),
+							})
+						)
 					)
 				)
 			)
@@ -81,7 +95,11 @@ export class FolderEffects {
 				this.fileService.delete(itemId).pipe(
 					map(() => FolderActions.deleteFolderSuccess({ name })),
 					catchError(error =>
-						of(FolderActions.deleteFolderFailure({ error: mapApiError(error) }))
+						of(
+							FolderActions.deleteFolderFailure({
+								error: mapApiError(error),
+							})
+						)
 					)
 				)
 			)

@@ -8,15 +8,16 @@
 		@if (target && details) {
 		<div class="rounded border bg-gray-50 p-3 text-sm text-gray-700">
 			<div>
-				<span class="font-medium">Filename:</span> {{ details.fileName }}
+				<span class="font-medium">Filename:</span> {{ details.fileName
+				}}
 			</div>
 			<div>
 				<span class="font-medium">File extension:</span>
 				{{ details.fileExtension }}
 			</div>
 			<div>
-				<span class="font-medium">Creation date:</span> {{ details.creationDate
-				}}
+				<span class="font-medium">Creation date:</span> {{
+				details.creationDate }}
 			</div>
 			<div><span class="font-medium">Path:</span> {{ details.path }}</div>
 			<div><span class="font-medium">Size:</span> {{ details.size }}</div>

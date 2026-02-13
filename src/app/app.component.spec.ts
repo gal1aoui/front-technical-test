@@ -29,6 +29,8 @@ describe('AppComponent', () => {
 		const fixture = TestBed.createComponent(AppComponent);
 		fixture.detectChanges();
 		const compiled = fixture.nativeElement as HTMLElement;
-		expect(compiled.querySelector('h1')?.textContent).toContain('File Manager');
+		expect(compiled.querySelector('h1')?.textContent).toContain(
+			'File Manager'
+		);
 	});
 });

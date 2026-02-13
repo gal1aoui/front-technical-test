@@ -53,7 +53,11 @@ export class FileEffects {
 						FileActions.loadItemsSuccess({ items: response.items })
 					),
 					catchError(error =>
-						of(FileActions.loadItemsFailure({ error: mapApiError(error) }))
+						of(
+							FileActions.loadItemsFailure({
+								error: mapApiError(error),
+							})
+						)
 					)
 				)
 			)
@@ -67,10 +71,16 @@ export class FileEffects {
 			exhaustMap(([{ files }, parentId]) =>
 				this.fileService.uploadFiles(files, parentId).pipe(
 					map(response =>
-						FileActions.uploadFilesSuccess({ count: response.items.length })
+						FileActions.uploadFilesSuccess({
+							count: response.items.length,
+						})
 					),
 					catchError(error =>
-						of(FileActions.uploadFilesFailure({ error: mapApiError(error) }))
+						of(
+							FileActions.uploadFilesFailure({
+								error: mapApiError(error),
+							})
+						)
 					)
 				)
 			)
@@ -84,7 +94,11 @@ export class FileEffects {
 				this.fileService.renameItem(itemId, name).pipe(
 					map(() => FileActions.renameFileSuccess({ name })),
 					catchError(error =>
-						of(FileActions.renameFileFailure({ error: mapApiError(error) }))
+						of(
+							FileActions.renameFileFailure({
+								error: mapApiError(error),
+							})
+						)
 					)
 				)
 			)
@@ -96,9 +110,15 @@ export class FileEffects {
 			ofType(FileActions.moveFile),
 			exhaustMap(({ itemId, parentId }) =>
 				this.fileService.moveItem(itemId, parentId).pipe(
-					map(item => FileActions.moveFileSuccess({ name: item.name })),
+					map(item =>
+						FileActions.moveFileSuccess({ name: item.name })
+					),
 					catchError(error =>
-						of(FileActions.moveFileFailure({ error: mapApiError(error) }))
+						of(
+							FileActions.moveFileFailure({
+								error: mapApiError(error),
+							})
+						)
 					)
 				)
 			)
@@ -112,7 +132,11 @@ export class FileEffects {
 				this.fileService.delete(itemId).pipe(
 					map(() => FileActions.deleteFileSuccess({ name })),
 					catchError(error =>
-						of(FileActions.deleteFileFailure({ error: mapApiError(error) }))
+						of(
+							FileActions.deleteFileFailure({
+								error: mapApiError(error),
+							})
+						)
 					)
 				)
 			)

@@ -39,7 +39,9 @@ export class UploadComponent {
 
 	upload(input: HTMLInputElement): void {
 		if (!this.selectedFiles.length) return;
-		this.store.dispatch(FileActions.uploadFiles({ files: this.selectedFiles }));
+		this.store.dispatch(
+			FileActions.uploadFiles({ files: this.selectedFiles })
+		);
 		this.selectedFiles = [];
 		input.value = '';
 	}

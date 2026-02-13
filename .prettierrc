@@ -9,6 +9,7 @@
 	"bracketSpacing": true,
 	"arrowParens": "avoid",
 	"plugins": ["prettier-plugin-tailwindcss"],
+	"tailwindFunctions": ["hlm", "cva", "classes"],
 	"overrides": [
 		{
 			"files": "*.component.html",
@@ -22,6 +23,5 @@
 				"parser": "html"
 			}
 		}
-	],
-	"tailwindFunctions": ["hlm", "cva", "classes"]
+	]
 }

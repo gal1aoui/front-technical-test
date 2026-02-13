@@ -66,8 +66,8 @@
 				<ng-icon hlm size="sm" name="lucideHouse" />
 				Root
 			</button>
-			@if (breadcrumbs$ | async; as breadcrumbs) { @for (crumb of breadcrumbs;
-			track crumb.id) {
+			@if (breadcrumbs$ | async; as breadcrumbs) { @for (crumb of
+			breadcrumbs; track crumb.id) {
 			<ng-icon hlm size="sm" name="lucideChevronRight" />
 			<button
 				hlmBtn
@@ -112,9 +112,12 @@
 					</tr>
 				</thead>
 				<tbody>
-					@let items = (items$ | async) ?? []; @if (items.length === 0) {
+					@let items = (items$ | async) ?? []; @if (items.length ===
+					0) {
 					<tr>
-						<td colspan="4" class="px-4 py-8 text-center text-gray-500">
+						<td
+							colspan="4"
+							class="px-4 py-8 text-center text-gray-500">
 							Drop files/folders here or use upload actions
 						</td>
 					</tr>
@@ -159,7 +162,10 @@
 									size="icon"
 									aria-label="Download file"
 									(click)="download(item)">
-									<ng-icon hlm size="sm" name="lucideDownload" />
+									<ng-icon
+										hlm
+										size="sm"
+										name="lucideDownload" />
 								</button>
 								}
 								<button
@@ -168,7 +174,10 @@
 									size="icon"
 									aria-label="Rename item"
 									(click)="rename(item)">
-									<ng-icon hlm size="sm" name="lucidePencil" />
+									<ng-icon
+										hlm
+										size="sm"
+										name="lucidePencil" />
 								</button>
 								<button
 									hlmBtn
@@ -176,7 +185,10 @@
 									size="icon"
 									aria-label="Move item"
 									(click)="move(item)">
-									<ng-icon hlm size="sm" name="lucideArrowRightLeft" />
+									<ng-icon
+										hlm
+										size="sm"
+										name="lucideArrowRightLeft" />
 								</button>
 								<button
 									hlmBtn
@@ -184,7 +196,10 @@
 									size="icon"
 									aria-label="Delete item"
 									(click)="delete(item)">
-									<ng-icon hlm size="sm" name="lucideTrash2" />
+									<ng-icon
+										hlm
+										size="sm"
+										name="lucideTrash2" />
 								</button>
 							</div>
 						</td>
@@ -223,7 +238,10 @@
 		<div hlmDropdownMenu>
 			<div hlmDropdownMenuLabel>Item actions</div>
 			@if (item.folder) {
-			<button hlmDropdownMenuItem type="button" (click)="openFolder(item)">
+			<button
+				hlmDropdownMenuItem
+				type="button"
+				(click)="openFolder(item)">
 				<ng-icon hlm size="sm" name="lucideFolder" />
 				Open folder
 			</button>

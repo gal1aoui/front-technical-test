@@ -1,60 +1,40 @@
 {
-  "compileOnSave": false,
-  "compilerOptions": {
-    "outDir": "./dist/out-tsc",
-    "strict": true,
-    "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "skipLibCheck": true,
-    "isolatedModules": true,
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "moduleResolution": "bundler",
-    "importHelpers": true,
-    "target": "ES2022",
-    "module": "ES2022",
-    "paths": {
-      "@spartan-ng/helm/sonner": [
-        "./libs/ui/sonner/src/index.ts"
-      ],
-      "@spartan-ng/helm/utils": [
-        "./libs/ui/utils/src/index.ts"
-      ],
-      "@spartan-ng/helm/button": [
-        "./libs/ui/button/src/index.ts"
-      ],
-      "@spartan-ng/helm/scroll-area": [
-        "./libs/ui/scroll-area/src/index.ts"
-      ],
-      "@spartan-ng/helm/resizable": [
-        "./libs/ui/resizable/src/index.ts"
-      ],
-      "@spartan-ng/helm/breadcrumb": [
-        "./libs/ui/breadcrumb/src/index.ts"
-      ],
-      "@spartan-ng/helm/icon": [
-        "./libs/ui/icon/src/index.ts"
-      ],
-      "@spartan-ng/helm/button-group": [
-        "./libs/ui/button-group/src/index.ts"
-      ],
-      "@spartan-ng/helm/context-menu": [
-        "./libs/ui/context-menu/src/index.ts"
-      ],
-      "@spartan-ng/helm/dropdown-menu": [
-        "./libs/ui/dropdown-menu/src/index.ts"
-      ],
-      "@spartan-ng/helm/dialog": [
-        "./libs/ui/dialog/src/index.ts"
-      ]
-    }
-  },
-  "angularCompilerOptions": {
-    "enableI18nLegacyMessageIdFormat": false,
-    "strictInjectionParameters": true,
-    "strictInputAccessModifiers": true,
-    "strictTemplates": true
-  }
+	"compileOnSave": false,
+	"compilerOptions": {
+		"outDir": "./dist/out-tsc",
+		"strict": true,
+		"noImplicitOverride": true,
+		"noPropertyAccessFromIndexSignature": true,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"skipLibCheck": true,
+		"isolatedModules": true,
+		"esModuleInterop": true,
+		"experimentalDecorators": true,
+		"moduleResolution": "bundler",
+		"importHelpers": true,
+		"target": "ES2022",
+		"module": "ES2022",
+		"paths": {
+			"@spartan-ng/helm/sonner": ["./libs/ui/sonner/src/index.ts"],
+			"@spartan-ng/helm/utils": ["./libs/ui/utils/src/index.ts"],
+			"@spartan-ng/helm/button": ["./libs/ui/button/src/index.ts"],
+			"@spartan-ng/helm/scroll-area": ["./libs/ui/scroll-area/src/index.ts"],
+			"@spartan-ng/helm/resizable": ["./libs/ui/resizable/src/index.ts"],
+			"@spartan-ng/helm/breadcrumb": ["./libs/ui/breadcrumb/src/index.ts"],
+			"@spartan-ng/helm/icon": ["./libs/ui/icon/src/index.ts"],
+			"@spartan-ng/helm/button-group": ["./libs/ui/button-group/src/index.ts"],
+			"@spartan-ng/helm/context-menu": ["./libs/ui/context-menu/src/index.ts"],
+			"@spartan-ng/helm/dropdown-menu": [
+				"./libs/ui/dropdown-menu/src/index.ts"
+			],
+			"@spartan-ng/helm/dialog": ["./libs/ui/dialog/src/index.ts"]
+		}
+	},
+	"angularCompilerOptions": {
+		"enableI18nLegacyMessageIdFormat": false,
+		"strictInjectionParameters": true,
+		"strictInputAccessModifiers": true,
+		"strictTemplates": true
+	}
 }
